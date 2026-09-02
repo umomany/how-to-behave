@@ -1,0 +1,46 @@
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+Copyright (c) 2026 Usama Momany
+
+WHAT THIS COVERS
+
+The educational content of this repository:
+
+  - texts.json                the Arabic scenario texts
+  - audio/manifest.json       the same texts, keyed by hash
+  - manifest_tashkeel.json    the hand-diacritized texts
+  - audio/*.mp3               the 312 generated speech clips
+
+The software (index.html, build_audio.py) is licensed separately under the
+MIT License. See LICENSE.
+
+YOUR RIGHTS
+
+You are free to share this content in any medium or format, and to adapt,
+remix, and build upon it, for any purpose, including commercially.
+
+The one condition is attribution: give appropriate credit to Usama Momany,
+link to this license, and indicate if you made changes. You may do so in any
+reasonable manner, but not in any way that suggests the author endorses you
+or your use.
+
+Suggested attribution:
+
+  Based on «كيف أتصرّف؟» by Usama Momany, licensed CC BY 4.0.
+  https://github.com/umomany/how-to-behave
+
+FULL LICENSE TEXT
+
+This is a human-readable summary, not a substitute for the license. The
+complete legal text is at:
+
+  https://creativecommons.org/licenses/by/4.0/legalcode
+  https://creativecommons.org/licenses/by/4.0/    (plain-language deed)
+
+A NOTE ON THE AUDIO
+
+The speech clips were synthesized with Microsoft's neural voices via
+edge-tts. The CC BY grant above applies to this collection as compiled and
+edited by the author. Anyone redistributing or building on the audio should
+independently confirm that their intended use complies with Microsoft's
+terms for the underlying speech service.
