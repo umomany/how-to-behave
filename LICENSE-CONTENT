@@ -12,7 +12,9 @@ The educational content of this repository:
   - audio/*.mp3               the 312 generated speech clips
 
 The software (index.html, build_audio.py) is licensed separately under the
-MIT License. See LICENSE.
+MIT License. See LICENSE, which is kept as the unmodified MIT text so GitHub
+detects it — this file is where the split between code and content is
+recorded.
 
 YOUR RIGHTS
 
