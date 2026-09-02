@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>لعبة: كيف أتصرّف؟</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#23303B;--soft:#5A6672;--line:#E2E5E1;--paper:#fff;--bg:#EFF1EE;
+--clay:#E0794A;--sea:#3C7FB8;--leaf:#3E9D7A;--plum:#7C6BC4;--rose:#CE6389;--sun:#DFA22B;--ember:#CE564E}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Tajawal","Noto Kufi Arabic","Segoe UI",Tahoma,sans-serif;font-size:16px;line-height:1.7}
+.wrap{max-width:760px;margin:0 auto;padding:14px 14px 40px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:9px 12px}
+.brand{font-weight:700;font-size:18px}
+.tools{display:flex;gap:7px;flex-wrap:wrap}
+button{font-family:inherit;font-size:15px;cursor:pointer;border-radius:14px;border:1px solid var(--line);background:var(--paper);color:var(--ink);padding:8px 14px;transition:transform .12s ease,background .15s}
+button:active{transform:scale(.97)}
+button:focus-visible{outline:3px solid var(--sea);outline-offset:2px}
+.tool{font-size:14px;padding:7px 12px}
+.tool[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:18px;margin-top:14px}
+h1{font-size:28px;margin:0 0 6px;line-height:1.35}
+h2{font-size:21px;margin:0 0 8px}
+p{margin:0 0 10px}
+.muted{color:var(--soft)}
+.art{border-radius:18px;overflow:hidden;background:var(--tint,#F2F4F1)}
+.art svg{display:block;width:100%;height:auto}
+.opts{display:grid;gap:10px;margin-top:14px}
+.opt{text-align:right;padding:14px 16px;border:2px solid var(--line);border-radius:18px;font-size:17px;line-height:1.6}
+.opt:hover{background:#F7F8F6}
+.opt.good{border-color:var(--leaf);background:#E9F5F0}
+.opt.bad{border-color:var(--ember);background:#FBECEA}
+.opt[disabled]{cursor:default;opacity:.75}
+.opt.good[disabled],.opt.bad[disabled]{opacity:1}
+.fb{margin-top:14px;border-radius:18px;padding:14px 16px;border:1px solid var(--line);background:#F7F8F6}
+.fb h3{margin:0 0 4px;font-size:18px}
+.fb.win h3{color:var(--leaf)} .fb.miss h3{color:var(--ember)}
+.tip{font-family:"Amiri",serif;font-size:17px;color:var(--soft);border-top:1px solid var(--line);margin-top:10px;padding-top:8px}
+.row{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.big{background:var(--sea);color:#fff;border-color:var(--sea);font-size:18px;font-weight:700;padding:13px 26px;border-radius:18px}
+.big.leaf{background:var(--leaf);border-color:var(--leaf)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chips span{background:#F1F3F0;border-radius:20px;padding:6px 13px;font-size:15px;font-weight:500}
+.worlds{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:14px}
+.world{text-align:right;padding:0;overflow:hidden;border:2px solid var(--line);border-radius:20px;background:var(--paper)}
+.world .lbl{padding:12px 15px}
+.world h3{margin:0;font-size:18px;color:var(--hue)}
+.stars{font-size:15px;color:var(--sun);letter-spacing:2px}
+.prog{display:flex;gap:5px;margin-bottom:10px}
+.prog i{height:7px;flex:1;border-radius:4px;background:#E7EAE6}
+.prog i.on{background:var(--sun)}
+.note{font-size:14px;color:var(--soft)}
+input[type=text]{font-family:inherit;font-size:16px;padding:11px 14px;border-radius:14px;border:1px solid var(--line);width:220px}
+.cert{border:3px double var(--sun);border-radius:22px;padding:26px;text-align:center}
+.cert .name{font-family:"Amiri",serif;font-size:30px;font-weight:700;margin:8px 0}
+.hide{display:none}
+@media print{.bar,.tools,.row,.note{display:none}body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="bar">
+    <span class="brand">كيف أتصرّف؟</span>
+    <div class="tools">
+      <button class="tool" id="btnLang" onclick="toggleLang()">كلمات سهلة</button>
+      <button class="tool" id="btnSound" aria-pressed="true" onclick="toggleSound()">الصوت يعمل</button>
+      <button class="tool" onclick="openTool('voice')">إعدادات الصوت</button>
+      <button class="tool" onclick="goMap()">الخريطة</button>
+    </div>
+  </div>
+
+  <div id="screen"></div>
+  <p class="note" id="voiceNote"></p>
+</div>
+
+<script>
+const ART = {"parents": "<svg viewBox=\"0 0 300 108\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"أب وأم وطفل بينهما\"> <path d=\"M60 96h180\" stroke=\"#E4C4AE\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/> <path d=\"M112 40q0-18 16-18t16 18v10q0 14-16 14t-16-14z\" fill=\"#C9557C\"/> <circle cx=\"128\" cy=\"42\" r=\"10\" fill=\"#F0C39C\"/> <circle cx=\"124.5\" cy=\"41\" r=\"1.4\" fill=\"#23303B\"/><circle cx=\"131.5\" cy=\"41\" r=\"1.4\" fill=\"#23303B\"/> <path d=\"M124.5 46q3.5 3 7 0\" stroke=\"#23303B\" stroke-width=\"1.3\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M110 96V70q0-16 18-16t18 16v26z\" fill=\"#C9557C\"/> <circle cx=\"182\" cy=\"40\" r=\"11\" fill=\"#F0C39C\"/> <path d=\"M171 36q4-11 11-11t11 11q-4-5-11-5t-11 5z\" fill=\"#3A4750\"/> <circle cx=\"178.5\" cy=\"40\" r=\"1.4\" fill=\"#23303B\"/><circle cx=\"185.5\" cy=\"40\" r=\"1.4\" fill=\"#23303B\"/> <path d=\"M178.5 45q3.5 3 7 0\" stroke=\"#23303B\" stroke-width=\"1.3\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M164 96V70q0-18 18-18t18 18v26z\" fill=\"#3C7FB8\"/> <circle cx=\"155\" cy=\"62\" r=\"8\" fill=\"#F0C39C\"/> <circle cx=\"152.2\" cy=\"61.5\" r=\"1.2\" fill=\"#23303B\"/><circle cx=\"157.8\" cy=\"61.5\" r=\"1.2\" fill=\"#23303B\"/> <path d=\"M152.5 65.5q2.8 2.6 5.5 0\" stroke=\"#23303B\" stroke-width=\"1.2\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M143 96V80q0-11 12-11t12 11v16z\" fill=\"#DFA22B\"/> <path d=\"M146 74l-6 4M164 74l6 4\" stroke=\"#F0C39C\" stroke-width=\"5\" stroke-linecap=\"round\"/> <path d=\"M96 34c0-5 7-6 8-1 1-5 8-4 8 1 0 5-8 9-8 9s-8-4-8-9z\" fill=\"#E0794A\" opacity=\".85\"/> <path d=\"M198 30c0-4 5.5-4.8 6.4-.8.8-4 6.4-3.2 6.4.8 0 4-6.4 7.2-6.4 7.2s-6.4-3.2-6.4-7.2z\" fill=\"#E0794A\" opacity=\".55\"/> </svg>", "sibBig": "<svg viewBox=\"0 0 300 108\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"أخ أكبر يناول أخاه الأصغر كتابًا\"> <path d=\"M60 96h180\" stroke=\"#CFC9EC\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/> <circle cx=\"118\" cy=\"42\" r=\"11\" fill=\"#F0C39C\"/> <path d=\"M107 38q5-11 11-11t11 11q-4-5-11-5t-11 5z\" fill=\"#3A4750\"/> <circle cx=\"114.5\" cy=\"42\" r=\"1.4\" fill=\"#23303B\"/><circle cx=\"121.5\" cy=\"42\" r=\"1.4\" fill=\"#23303B\"/> <path d=\"M114.5 47q3.5 3 7 0\" stroke=\"#23303B\" stroke-width=\"1.3\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M100 96V72q0-18 18-18t18 18v24z\" fill=\"#7C6BC4\"/> <path d=\"M136 70l14 6\" stroke=\"#7C6BC4\" stroke-width=\"7\" stroke-linecap=\"round\"/> <circle cx=\"186\" cy=\"58\" r=\"9\" fill=\"#F0C39C\"/> <circle cx=\"183\" cy=\"58\" r=\"1.3\" fill=\"#23303B\"/><circle cx=\"189\" cy=\"58\" r=\"1.3\" fill=\"#23303B\"/> <path d=\"M183 62.5q3 2.8 6 0\" stroke=\"#23303B\" stroke-width=\"1.2\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M172 96V76q0-14 14-14t14 14v20z\" fill=\"#3E9D7A\"/> <path d=\"M172 76l-11 3\" stroke=\"#3E9D7A\" stroke-width=\"6\" stroke-linecap=\"round\"/> <rect x=\"146\" y=\"70\" width=\"26\" height=\"17\" rx=\"3\" fill=\"#DFA22B\"/> <path d=\"M159 70v17\" stroke=\"#FBEDE4\" stroke-width=\"1.6\"/> </svg>", "sibSmall": "<svg viewBox=\"0 0 300 108\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"طفل يلعب بالكرة مع أخيه الصغير\"> <path d=\"M60 96h180\" stroke=\"#BFDFD2\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/> <circle cx=\"112\" cy=\"46\" r=\"10\" fill=\"#F0C39C\"/> <circle cx=\"108.8\" cy=\"46\" r=\"1.3\" fill=\"#23303B\"/><circle cx=\"115.2\" cy=\"46\" r=\"1.3\" fill=\"#23303B\"/> <path d=\"M108.8 50.5q3.2 3 6.4 0\" stroke=\"#23303B\" stroke-width=\"1.2\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M96 96V74q0-16 16-16t16 16v22z\" fill=\"#3E9D7A\"/> <path d=\"M128 74l12 8\" stroke=\"#3E9D7A\" stroke-width=\"6\" stroke-linecap=\"round\"/> <circle cx=\"196\" cy=\"62\" r=\"8.5\" fill=\"#F0C39C\"/> <circle cx=\"193.2\" cy=\"62\" r=\"1.2\" fill=\"#23303B\"/><circle cx=\"198.8\" cy=\"62\" r=\"1.2\" fill=\"#23303B\"/> <path d=\"M193.2 66q2.8 2.6 5.6 0\" stroke=\"#23303B\" stroke-width=\"1.2\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M184 96V78q0-12 12-12t12 12v18z\" fill=\"#CE6389\"/> <path d=\"M184 78l-10 6\" stroke=\"#CE6389\" stroke-width=\"5.5\" stroke-linecap=\"round\"/> <circle cx=\"158\" cy=\"86\" r=\"11\" fill=\"#DFA22B\"/> <path d=\"M147 86h22M158 75v22\" stroke=\"#FFFFFF\" stroke-width=\"1.6\"/> </svg>", "relatives": "<svg viewBox=\"0 0 300 108\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"بيت الأقارب وثلاثة أشخاص يتزاورون\"> <path d=\"M60 96h180\" stroke=\"#E9D6AB\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/> <path d=\"M92 54l30-22 30 22z\" fill=\"#CE564E\"/> <rect x=\"100\" y=\"54\" width=\"44\" height=\"42\" fill=\"#F3E0BE\"/> <rect x=\"114\" y=\"70\" width=\"16\" height=\"26\" rx=\"3\" fill=\"#8A6A3E\"/> <circle cx=\"176\" cy=\"58\" r=\"9.5\" fill=\"#F0C39C\"/> <path d=\"M166.5 55q4.5-10 9.5-10t9.5 10q-4-5-9.5-5t-9.5 5z\" fill=\"#3A4750\"/> <circle cx=\"173\" cy=\"58\" r=\"1.3\" fill=\"#23303B\"/><circle cx=\"179\" cy=\"58\" r=\"1.3\" fill=\"#23303B\"/> <path d=\"M173 62.5q3 2.8 6 0\" stroke=\"#23303B\" stroke-width=\"1.2\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M161 96V76q0-15 15-15t15 15v20z\" fill=\"#3C7FB8\"/> <path d=\"M206 46q0-16 14-16t14 16v9q0 12-14 12t-14-12z\" fill=\"#3E9D7A\"/> <circle cx=\"220\" cy=\"48\" r=\"9\" fill=\"#F0C39C\"/> <circle cx=\"217\" cy=\"48\" r=\"1.3\" fill=\"#23303B\"/><circle cx=\"223\" cy=\"48\" r=\"1.3\" fill=\"#23303B\"/> <path d=\"M217 52.5q3 2.8 6 0\" stroke=\"#23303B\" stroke-width=\"1.2\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M206 96V74q0-14 14-14t14 14v22z\" fill=\"#3E9D7A\"/> <path d=\"M191 78l16 2\" stroke=\"#F0C39C\" stroke-width=\"5\" stroke-linecap=\"round\"/> <path d=\"M188 32c0-6 8-7 9.5-1.5C199 25 207 26 207 32c0 6-9.5 11-9.5 11S188 38 188 32z\" fill=\"#CE6389\" opacity=\".8\"/> </svg>", "teacher": "<svg viewBox=\"0 0 300 108\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"معلمة أمام السبورة وطالب يرفع يده\"> <path d=\"M60 96h180\" stroke=\"#C3D9EA\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/> <rect x=\"88\" y=\"24\" width=\"76\" height=\"50\" rx=\"5\" fill=\"#3A4750\"/> <path d=\"M100 40h50M100 50h38M100 60h44\" stroke=\"#EFF1EE\" stroke-width=\"2.4\" stroke-linecap=\"round\"/> <path d=\"M178 46q0-17 15-17t15 17v9q0 13-15 13t-15-13z\" fill=\"#CE6389\"/> <circle cx=\"193\" cy=\"48\" r=\"9.5\" fill=\"#F0C39C\"/> <circle cx=\"189.8\" cy=\"48\" r=\"1.3\" fill=\"#23303B\"/><circle cx=\"196.2\" cy=\"48\" r=\"1.3\" fill=\"#23303B\"/> <path d=\"M189.8 52.5q3.2 2.8 6.4 0\" stroke=\"#23303B\" stroke-width=\"1.2\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M178 96V74q0-15 15-15t15 15v22z\" fill=\"#CE6389\"/> <path d=\"M178 74l-14 4\" stroke=\"#CE6389\" stroke-width=\"5.5\" stroke-linecap=\"round\"/> <circle cx=\"242\" cy=\"60\" r=\"9\" fill=\"#F0C39C\"/> <circle cx=\"239\" cy=\"60\" r=\"1.3\" fill=\"#23303B\"/><circle cx=\"245\" cy=\"60\" r=\"1.3\" fill=\"#23303B\"/> <path d=\"M239 64.5q3 2.8 6 0\" stroke=\"#23303B\" stroke-width=\"1.2\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M228 96V77q0-14 14-14t14 14v19z\" fill=\"#3C7FB8\"/> <path d=\"M229 78l-8-22\" stroke=\"#F0C39C\" stroke-width=\"5\" stroke-linecap=\"round\"/> <circle cx=\"220\" cy=\"52\" r=\"4.5\" fill=\"#F0C39C\"/> </svg>", "classmates": "<svg viewBox=\"0 0 300 108\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"ثلاثة زملاء حول طاولة يتشاركون أدواتهم\"> <circle cx=\"108\" cy=\"48\" r=\"9\" fill=\"#F0C39C\"/> <circle cx=\"105\" cy=\"48\" r=\"1.3\" fill=\"#23303B\"/><circle cx=\"111\" cy=\"48\" r=\"1.3\" fill=\"#23303B\"/> <path d=\"M105 52.5q3 2.8 6 0\" stroke=\"#23303B\" stroke-width=\"1.2\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M94 78V64q0-14 14-14t14 14v14z\" fill=\"#3E9D7A\"/> <path d=\"M150 44q0-15 14-15t14 15v8q0 12-14 12t-14-12z\" fill=\"#7C6BC4\"/> <circle cx=\"164\" cy=\"46\" r=\"9\" fill=\"#F0C39C\"/> <circle cx=\"161\" cy=\"46\" r=\"1.3\" fill=\"#23303B\"/><circle cx=\"167\" cy=\"46\" r=\"1.3\" fill=\"#23303B\"/> <path d=\"M161 50.5q3 2.8 6 0\" stroke=\"#23303B\" stroke-width=\"1.2\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M150 78V62q0-14 14-14t14 14v16z\" fill=\"#7C6BC4\"/> <circle cx=\"216\" cy=\"48\" r=\"9\" fill=\"#F0C39C\"/> <circle cx=\"213\" cy=\"48\" r=\"1.3\" fill=\"#23303B\"/><circle cx=\"219\" cy=\"48\" r=\"1.3\" fill=\"#23303B\"/> <path d=\"M213 52.5q3 2.8 6 0\" stroke=\"#23303B\" stroke-width=\"1.2\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M202 78V64q0-14 14-14t14 14v14z\" fill=\"#DFA22B\"/> <rect x=\"80\" y=\"78\" width=\"164\" height=\"8\" rx=\"4\" fill=\"#B98A5E\"/> <path d=\"M96 86v10M228 86v10\" stroke=\"#B98A5E\" stroke-width=\"5\" stroke-linecap=\"round\"/> <path d=\"M122 70l26-4\" stroke=\"#CE564E\" stroke-width=\"4\" stroke-linecap=\"round\"/> <path d=\"M148 66l6-1-5-3z\" fill=\"#3A4750\"/> </svg>", "friends": "<svg viewBox=\"0 0 300 108\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"صديقان متجاوران وأحدهما يضع يده على كتف الآخر\"> <path d=\"M60 96h180\" stroke=\"#BFDFD2\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/> <circle cx=\"128\" cy=\"52\" r=\"10\" fill=\"#F0C39C\"/> <circle cx=\"124.8\" cy=\"52\" r=\"1.3\" fill=\"#23303B\"/><circle cx=\"131.2\" cy=\"52\" r=\"1.3\" fill=\"#23303B\"/> <path d=\"M124.8 56.5q3.2 3 6.4 0\" stroke=\"#23303B\" stroke-width=\"1.2\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M112 96V78q0-16 16-16t16 16v18z\" fill=\"#3C7FB8\"/> <circle cx=\"176\" cy=\"52\" r=\"10\" fill=\"#F0C39C\"/> <circle cx=\"172.8\" cy=\"52\" r=\"1.3\" fill=\"#23303B\"/><circle cx=\"179.2\" cy=\"52\" r=\"1.3\" fill=\"#23303B\"/> <path d=\"M172.8 56.5q3.2 3 6.4 0\" stroke=\"#23303B\" stroke-width=\"1.2\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M160 96V78q0-16 16-16t16 16v18z\" fill=\"#DFA22B\"/> <path d=\"M160 72q-8-6-16 0\" stroke=\"#DFA22B\" stroke-width=\"6\" stroke-linecap=\"round\" fill=\"none\"/> <rect x=\"196\" y=\"26\" width=\"52\" height=\"26\" rx=\"10\" fill=\"#3E9D7A\"/> <path d=\"M206 52l-2 9 10-9z\" fill=\"#3E9D7A\"/> <circle cx=\"212\" cy=\"39\" r=\"2.6\" fill=\"#FFFFFF\"/><circle cx=\"222\" cy=\"39\" r=\"2.6\" fill=\"#FFFFFF\"/><circle cx=\"232\" cy=\"39\" r=\"2.6\" fill=\"#FFFFFF\"/> </svg>", "salam": "<svg viewBox=\"0 0 600 84\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"طفل يلوّح بالسلام تحت الشمس\"> <path d=\"M40 74h520\" stroke=\"#E4C4AE\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/> <circle cx=\"500\" cy=\"30\" r=\"15\" fill=\"#DFA22B\"/> <path d=\"M500 6v-5M500 59v5M476 30h-5M529 30h5M483 13l-4-4M517 47l4 4M517 13l4-4M483 47l-4 4\" stroke=\"#DFA22B\" stroke-width=\"3\" stroke-linecap=\"round\"/> <circle cx=\"300\" cy=\"34\" r=\"11\" fill=\"#F0C39C\"/> <circle cx=\"296.5\" cy=\"34\" r=\"1.4\" fill=\"#23303B\"/><circle cx=\"303.5\" cy=\"34\" r=\"1.4\" fill=\"#23303B\"/> <path d=\"M296.5 39q3.5 3.2 7 0\" stroke=\"#23303B\" stroke-width=\"1.3\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M282 74V56q0-18 18-18t18 18v18z\" fill=\"#3C7FB8\"/> <path d=\"M318 56l14-14\" stroke=\"#F0C39C\" stroke-width=\"6\" stroke-linecap=\"round\"/> <circle cx=\"336\" cy=\"38\" r=\"5.5\" fill=\"#F0C39C\"/> <rect x=\"142\" y=\"10\" width=\"134\" height=\"34\" rx=\"14\" fill=\"#E0794A\"/> <path d=\"M266 44l-2 12 13-12z\" fill=\"#E0794A\"/> <text x=\"209\" y=\"33\" text-anchor=\"middle\" font-family=\"Amiri, serif\" font-size=\"19\" fill=\"#FFFFFF\">السلام عليكم</text> </svg>", "confident": "<svg viewBox=\"0 0 300 108\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"طفل واقف بثقة وحوله هالة ضوء\"> <path d=\"M60 96h180\" stroke=\"#CFC9EC\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/> <circle cx=\"150\" cy=\"56\" r=\"42\" fill=\"#7C6BC4\" opacity=\".12\"/> <path d=\"M150 6v10M108 24l7 7M192 24l-7 7M96 62h-10M204 62h10\" stroke=\"#7C6BC4\" stroke-width=\"3\" stroke-linecap=\"round\" opacity=\".5\"/> <circle cx=\"150\" cy=\"44\" r=\"12\" fill=\"#F0C39C\"/> <circle cx=\"146\" cy=\"44\" r=\"1.5\" fill=\"#23303B\"/><circle cx=\"154\" cy=\"44\" r=\"1.5\" fill=\"#23303B\"/> <path d=\"M145.5 49.5q4.5 3.5 9 0\" stroke=\"#23303B\" stroke-width=\"1.4\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M131 96V74q0-19 19-19t19 19v22z\" fill=\"#7C6BC4\"/> <path d=\"M131 74l-11 12M169 74l11 12\" stroke=\"#F0C39C\" stroke-width=\"6\" stroke-linecap=\"round\"/> </svg>", "stop": "<svg viewBox=\"0 0 300 108\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"طفل يرفع كفّه ويقول توقف ثم يمضي\"> <path d=\"M60 96h180\" stroke=\"#C3D9EA\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/> <circle cx=\"112\" cy=\"50\" r=\"11\" fill=\"#F0C39C\"/> <circle cx=\"108.5\" cy=\"50\" r=\"1.4\" fill=\"#23303B\"/><circle cx=\"115.5\" cy=\"50\" r=\"1.4\" fill=\"#23303B\"/> <path d=\"M108.5 55q3.5 3 7 0\" stroke=\"#23303B\" stroke-width=\"1.3\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M94 96V76q0-18 18-18t18 18v20z\" fill=\"#3C7FB8\"/> <path d=\"M130 76l16-4\" stroke=\"#F0C39C\" stroke-width=\"6\" stroke-linecap=\"round\"/> <circle cx=\"153\" cy=\"70\" r=\"7\" fill=\"#F0C39C\"/> <circle cx=\"216\" cy=\"54\" r=\"10\" fill=\"#F0C39C\"/> <circle cx=\"212.8\" cy=\"54\" r=\"1.3\" fill=\"#23303B\"/><circle cx=\"219.2\" cy=\"54\" r=\"1.3\" fill=\"#23303B\"/> <path d=\"M212.8 60q3.2-2.6 6.4 0\" stroke=\"#23303B\" stroke-width=\"1.3\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M200 96V78q0-16 16-16t16 16v18z\" fill=\"#9AA5AE\"/> <rect x=\"150\" y=\"16\" width=\"76\" height=\"30\" rx=\"12\" fill=\"#3C7FB8\"/> <path d=\"M160 46l-3 11 13-11z\" fill=\"#3C7FB8\"/> <text x=\"188\" y=\"37\" text-anchor=\"middle\" font-family=\"Amiri, serif\" font-size=\"19\" fill=\"#FFFFFF\">توقّف</text> </svg>", "help": "<svg viewBox=\"0 0 300 108\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"طفل يخبر معلمته بما حدث\"> <path d=\"M60 96h180\" stroke=\"#E9D6AB\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/> <path d=\"M182 44q0-17 15-17t15 17v9q0 13-15 13t-15-13z\" fill=\"#3E9D7A\"/> <circle cx=\"197\" cy=\"46\" r=\"9.5\" fill=\"#F0C39C\"/> <circle cx=\"193.8\" cy=\"46\" r=\"1.3\" fill=\"#23303B\"/><circle cx=\"200.2\" cy=\"46\" r=\"1.3\" fill=\"#23303B\"/> <path d=\"M193.8 50.5q3.2 2.8 6.4 0\" stroke=\"#23303B\" stroke-width=\"1.2\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M182 96V72q0-15 15-15t15 15v24z\" fill=\"#3E9D7A\"/> <path d=\"M182 74l-14 10\" stroke=\"#3E9D7A\" stroke-width=\"6\" stroke-linecap=\"round\"/> <circle cx=\"130\" cy=\"62\" r=\"9\" fill=\"#F0C39C\"/> <circle cx=\"127\" cy=\"62\" r=\"1.3\" fill=\"#23303B\"/><circle cx=\"133\" cy=\"62\" r=\"1.3\" fill=\"#23303B\"/> <path d=\"M127 66.5q3 2.8 6 0\" stroke=\"#23303B\" stroke-width=\"1.2\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M116 96V78q0-14 14-14t14 14v18z\" fill=\"#DFA22B\"/> <path d=\"M144 80l16 6\" stroke=\"#F0C39C\" stroke-width=\"5\" stroke-linecap=\"round\"/> <rect x=\"88\" y=\"18\" width=\"66\" height=\"28\" rx=\"12\" fill=\"#DFA22B\"/> <path d=\"M132 46l6 10 4-10z\" fill=\"#DFA22B\"/> <circle cx=\"107\" cy=\"32\" r=\"3\" fill=\"#FFFFFF\"/><circle cx=\"121\" cy=\"32\" r=\"3\" fill=\"#FFFFFF\"/><circle cx=\"135\" cy=\"32\" r=\"3\" fill=\"#FFFFFF\"/> </svg>", "shield": "<svg viewBox=\"0 0 300 108\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"طفل يحمل درعًا يدفع به الأذى\"> <path d=\"M60 96h180\" stroke=\"#BFDFD2\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/> <circle cx=\"120\" cy=\"48\" r=\"11\" fill=\"#F0C39C\"/> <circle cx=\"116.5\" cy=\"48\" r=\"1.4\" fill=\"#23303B\"/><circle cx=\"123.5\" cy=\"48\" r=\"1.4\" fill=\"#23303B\"/> <path d=\"M116.5 53q3.5 3 7 0\" stroke=\"#23303B\" stroke-width=\"1.3\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M102 96V74q0-18 18-18t18 18v22z\" fill=\"#3E9D7A\"/> <path d=\"M138 74l12 2\" stroke=\"#F0C39C\" stroke-width=\"6\" stroke-linecap=\"round\"/> <path d=\"M158 40l30 8v20q0 18-30 26-30-8-30-26V48z\" fill=\"#3E9D7A\" opacity=\".9\"/> <path d=\"M158 50l20 5.5v13q0 12-20 17.5-20-5.5-20-17.5v-13z\" fill=\"none\" stroke=\"#FFFFFF\" stroke-width=\"2.6\"/> <path d=\"M244 60h-32M212 60l10-8M212 60l10 8\" stroke=\"#CE564E\" stroke-width=\"4\" stroke-linecap=\"round\" fill=\"none\"/> </svg>", "peace": "<svg viewBox=\"0 0 300 108\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"طفلان يتصافحان بعد خصام وبينهما كرة\"> <path d=\"M60 96h180\" stroke=\"#E4C4AE\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/> <circle cx=\"112\" cy=\"50\" r=\"11\" fill=\"#F0C39C\"/> <circle cx=\"108.5\" cy=\"50\" r=\"1.4\" fill=\"#23303B\"/><circle cx=\"115.5\" cy=\"50\" r=\"1.4\" fill=\"#23303B\"/> <path d=\"M108.5 55q3.5 3 7 0\" stroke=\"#23303B\" stroke-width=\"1.3\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M94 96V76q0-18 18-18t18 18v20z\" fill=\"#3C7FB8\"/> <circle cx=\"196\" cy=\"50\" r=\"11\" fill=\"#F0C39C\"/> <circle cx=\"192.5\" cy=\"50\" r=\"1.4\" fill=\"#23303B\"/><circle cx=\"199.5\" cy=\"50\" r=\"1.4\" fill=\"#23303B\"/> <path d=\"M192.5 55q3.5 3 7 0\" stroke=\"#23303B\" stroke-width=\"1.3\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M178 96V76q0-18 18-18t18 18v20z\" fill=\"#E0794A\"/> <path d=\"M130 76h20M178 76h-20\" stroke=\"#F0C39C\" stroke-width=\"6\" stroke-linecap=\"round\"/> <circle cx=\"154\" cy=\"76\" r=\"7.5\" fill=\"#F0C39C\"/> <path d=\"M148 26c0-7 9-8 11-2 2-6 11-5 11 2 0 7-11 13-11 13s-11-6-11-13z\" fill=\"#CE6389\" opacity=\".85\"/> </svg>", "bystander": "<svg viewBox=\"0 0 300 108\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"طفل يقف بجانب زميل حزين بينما يبتعد المضايق\"> <path d=\"M60 96h180\" stroke=\"#C3D9EA\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/> <circle cx=\"228\" cy=\"54\" r=\"10\" fill=\"#F0C39C\"/> <circle cx=\"224.8\" cy=\"54\" r=\"1.3\" fill=\"#23303B\"/><circle cx=\"231.2\" cy=\"54\" r=\"1.3\" fill=\"#23303B\"/> <path d=\"M224.8 60q3.2-2.6 6.4 0\" stroke=\"#23303B\" stroke-width=\"1.3\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M212 96V78q0-16 16-16t16 16v18z\" fill=\"#9AA5AE\"/> <circle cx=\"150\" cy=\"52\" r=\"11\" fill=\"#F0C39C\"/> <circle cx=\"146.5\" cy=\"52\" r=\"1.4\" fill=\"#23303B\"/><circle cx=\"153.5\" cy=\"52\" r=\"1.4\" fill=\"#23303B\"/> <path d=\"M146.5 60q3.5-3 7 0\" stroke=\"#23303B\" stroke-width=\"1.3\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M132 96V78q0-18 18-18t18 18v18z\" fill=\"#DFA22B\"/> <circle cx=\"100\" cy=\"50\" r=\"11\" fill=\"#F0C39C\"/> <circle cx=\"96.5\" cy=\"50\" r=\"1.4\" fill=\"#23303B\"/><circle cx=\"103.5\" cy=\"50\" r=\"1.4\" fill=\"#23303B\"/> <path d=\"M96.5 55q3.5 3 7 0\" stroke=\"#23303B\" stroke-width=\"1.3\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M82 96V76q0-18 18-18t18 18v20z\" fill=\"#3C7FB8\"/> <path d=\"M118 76q10-4 18 2\" stroke=\"#3C7FB8\" stroke-width=\"6\" stroke-linecap=\"round\" fill=\"none\"/> </svg>", "noBad": "<svg viewBox=\"0 0 300 108\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"مشهد نميمة وسخرية عليه علامة منع\"> <circle cx=\"118\" cy=\"52\" r=\"10\" fill=\"#F0C39C\"/> <circle cx=\"114.8\" cy=\"52\" r=\"1.3\" fill=\"#23303B\"/><circle cx=\"121.2\" cy=\"52\" r=\"1.3\" fill=\"#23303B\"/> <path d=\"M114.8 58q3.2-2.4 6.4 0\" stroke=\"#23303B\" stroke-width=\"1.3\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M104 92V74q0-14 14-14t14 14v18z\" fill=\"#9AA5AE\"/> <circle cx=\"164\" cy=\"52\" r=\"10\" fill=\"#F0C39C\"/> <circle cx=\"160.8\" cy=\"52\" r=\"1.3\" fill=\"#23303B\"/><circle cx=\"167.2\" cy=\"52\" r=\"1.3\" fill=\"#23303B\"/> <path d=\"M160.8 58q3.2-2.4 6.4 0\" stroke=\"#23303B\" stroke-width=\"1.3\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M150 92V74q0-14 14-14t14 14v18z\" fill=\"#9AA5AE\"/> <rect x=\"112\" y=\"18\" width=\"60\" height=\"24\" rx=\"10\" fill=\"#CE564E\" opacity=\".25\"/> <path d=\"M124 30q6-8 12 0t12 0\" stroke=\"#CE564E\" stroke-width=\"2.6\" fill=\"none\" stroke-linecap=\"round\"/> <circle cx=\"150\" cy=\"56\" r=\"46\" fill=\"none\" stroke=\"#CE564E\" stroke-width=\"6\"/> <path d=\"M117 23l66 66\" stroke=\"#CE564E\" stroke-width=\"6\" stroke-linecap=\"round\"/> </svg>", "mirror": "<svg viewBox=\"0 0 600 84\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"طفل يتدرب على العبارات أمام المرآة\"> <path d=\"M40 74h520\" stroke=\"#CFC9EC\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/> <rect x=\"368\" y=\"8\" width=\"86\" height=\"66\" rx=\"14\" fill=\"#FFFFFF\" stroke=\"#7C6BC4\" stroke-width=\"3\"/> <circle cx=\"411\" cy=\"32\" r=\"10\" fill=\"#F0C39C\"/> <circle cx=\"407.8\" cy=\"32\" r=\"1.3\" fill=\"#23303B\"/><circle cx=\"414.2\" cy=\"32\" r=\"1.3\" fill=\"#23303B\"/> <path d=\"M407.8 37q3.2 2.8 6.4 0\" stroke=\"#23303B\" stroke-width=\"1.2\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M397 74V58q0-14 14-14t14 14v16z\" fill=\"#7C6BC4\" opacity=\".55\"/> <circle cx=\"300\" cy=\"30\" r=\"12\" fill=\"#F0C39C\"/> <circle cx=\"296\" cy=\"30\" r=\"1.5\" fill=\"#23303B\"/><circle cx=\"304\" cy=\"30\" r=\"1.5\" fill=\"#23303B\"/> <path d=\"M295.5 35.5q4.5 3.5 9 0\" stroke=\"#23303B\" stroke-width=\"1.4\" fill=\"none\" stroke-linecap=\"round\"/> <path d=\"M281 74V54q0-19 19-19t19 19v20z\" fill=\"#7C6BC4\"/> <path d=\"M319 54l16 4\" stroke=\"#F0C39C\" stroke-width=\"6\" stroke-linecap=\"round\"/> <rect x=\"112\" y=\"12\" width=\"140\" height=\"34\" rx=\"14\" fill=\"#7C6BC4\"/> <path d=\"M240 46l-2 12 13-12z\" fill=\"#7C6BC4\"/> <text x=\"182\" y=\"36\" text-anchor=\"middle\" font-family=\"Amiri, serif\" font-size=\"20\" fill=\"#FFFFFF\">أتدرّب كل أسبوع</text> </svg>"};
+
+const L = { f:0, s:1 };
+const state = { lang:0, sound:true, name:"", screen:"start", world:0, qi:0, picked:-1, first:{}, tool:"", aff:0, mis:[], misDone:{} };
+let breathTimer = null;
+
+const UI = {
+  start_h:   ["لعبة: كيف أتصرّف؟","لعبة: شو بسوّي؟"],
+  start_p:   ["تقرأ موقفًا يحدث كل يوم، وتختار أجمل تصرّف. لك نجمة على كل اختيار صحيح من أول مرة، ومعلومة تحفظها.","بتقرأ موقف، وبتختار أحسن تصرّف. كل جواب صح من أول مرة = نجمة، ومعه معلومة حلوة."],
+  name_lbl:  ["اسمك (اختياري)","اسمك"],
+  start_btn: ["ابدأ اللعب","يلّا نلعب"],
+  how:       ["يمكنك تغيير الكلمات إلى لغة أسهل، أو الاستماع للنص، من الأزرار في الأعلى.","تقدر تبدّل الكلمات لأسهل، أو تسمعها، من فوق."],
+  map_h:     ["اختر عالمًا","وين بدك تلعب؟"],
+  listen:    ["استمع","اسمعها"],
+  next:      ["الموقف التالي","التالي"],
+  again:     ["حاول مرة أخرى","جرّب كمان"],
+  back:      ["عودة للخريطة","ارجع"],
+  win:       ["أحسنت!","برافو!"],
+  miss:      ["ليس هذا الأفضل","في تصرّف أحلى"],
+  best:      ["الأفضل: ","الأحسن: "],
+  done_h:    ["أنهيت هذا العالم","خلّصت هذا العالم"],
+  practice:  ["عبارات أتدرّب عليها","جُمل بتدرّب عليها"],
+  cert_h:    ["شهادة حسن الخلق","شهادة أخلاق"],
+  cert_p:    ["أتمّ اللعبة وجمع","لعب كل المواقف وجمع"],
+  star_w:    ["نجمة","نجمة"],
+  print:     ["اطبع الشهادة","اطبع"],
+  restart:   ["العب من جديد","العب مرة ثانية"],
+  finish:    ["إلى الشهادة","خذ شهادتك"],
+  of:        ["من","من"],
+  tools_h:   ["أدواتي","أدواتي"],
+  t_shield:  ["درع الثقة","درع الثقة"],
+  t_calm:    ["أهدأ في دقيقة","اهدا بدقيقة"],
+  t_mission: ["مهمّة اليوم","مهمّة اليوم"],
+  t_dua:     ["أذكار الشجاعة","أذكار الشجاعة"],
+  aff_p:     ["اقرأها بصوت مسموع مرة واحدة، وصدّقها؛ فهي حقّ.","احكيها بصوت عالي مرة، وصدّقها لأنها صح."],
+  aff_next:  ["بطاقة أخرى","بطاقة تانية"],
+  calm_p:    ["حين يخفق قلبك قبل موقف صعب: تنفّس مع الدائرة ثلاث مرات، ثم ابدأ.","لما يدق قلبك قبل موقف صعب: تنفّس مع الدايرة ٣ مرات، وبعدين ابدأ."],
+  calm_go:   ["ابدأ التنفّس","ابدأ"],
+  calm_in:   ["شهيق من الأنف","شهيق من مناخيرك"],
+  calm_hold: ["احبس النفس","احبس نفسك"],
+  calm_out:  ["زفير من الفم","زفير من تمّك"],
+  calm_done: ["أحسنت، قلبك أهدأ الآن. أنت جاهز.","برافو، هلق قلبك أهدا. صرت جاهز."],
+  mis_p:     ["ثلاث مهمّات صغيرة لليوم. كل مهمّة تفعلها نجمة، والأجر عند الله أكبر.","٣ مهمات صغيرة لليوم. كل وحدة بتعملها = نجمة، والأجر عند الله أكبر."],
+  mis_done:  ["فعلتها","عملتها"],
+  mis_ok:    ["تمّت","تمّت"],
+  dua_p:     ["ذكرٌ قصير لكل موقف؛ احفظ واحدًا اليوم.","ذكر قصير لكل موقف؛ احفظ وحدة اليوم."],
+  when:      ["متى أقولها","إيمتى بقولها"],
+  badges:    ["أوسمتي","أوسمتي"],
+  t_voice:   ["إعدادات الصوت","إعدادات الصوت"],
+  v_pick:    ["اختر الصوت","اختر الصوت"],
+  v_test:    ["جرّب الصوت","جرّب الصوت"],
+  v_state:   ["حالة الصوت","حالة الصوت"]
+};
+
+const AFFIRM = [
+ [["خلقني الله في أحسن تقويم، وأنا أُحبّ نفسي كما خلقني","الله خلقني بأحلى شكل، وأنا بحبّ حالي"],["الخالق أتقن خلقك، فلا تُقلّل من نفسك.","الله خلقك متقن، فلا تصغّر حالك."]],
+ [["خطئي لا يعني أنّي فاشل، بل يعني أنّي أتعلّم","لما أغلط، يعني عم بتعلّم، مش فاشل"],["كل ماهر بدأ مخطئًا.","كل شاطر كان يوم بيغلط."]],
+ [["لا أحتاج أن يمدحني الجميع لأكون جيّدًا","مش لازم الكل يمدحني لأكون منيح"],["رضا الله أولًا، ثم رضا من يحبّك.","المهم يرضى الله، وبعدها يلي بيحبّوك."]],
+ [["أستطيع أن أقول: لا، وأبقى محبوبًا","بقدر أقول: لأ، وبضلّ محبوب"],["من يتركك لأنك رفضت الخطأ، لم يكن صديقًا.","يلي بيتركك لأنك رفضت الغلط، مش صاحب."]],
+ [["قوّتي أن أملك نفسي عند الغضب","قوّتي إني أمسك حالي لما أعصّب"],["أقوى لحظة هي التي تسكت فيها وأنت قادر.","أقوى لحظة لما تسكت وأنت قادر تحكي."]],
+ [["عندي شيءٌ جميل أُقدّمه لمن حولي","عندي شي حلو بقدّمه للناس"],["ابتسامة، أو مساعدة، أو كلمة طيبة: كلها صدقة.","ابتسامة أو مساعدة أو كلمة حلوة، كلها صدقة."]],
+ [["الله يراني ويحبّني ويسمع دعائي","الله شايفني وبيحبني وبيسمع دعائي"],["لست وحدك أبدًا، مهما كان الموقف.","عمرك ما بتكون لحالك."]],
+ [["الشجاعة أن أفعل الصواب وأنا خائف قليلًا","الشجاعة إني أعمل الصح حتى لو خايف شوي"],["الشجاع يخاف، لكنه يتقدّم.","الشجاع بيخاف، بس بيتقدّم."]]
+];
+
+const MISSIONS = [
+ ["اتصل بجدّك أو جدّتك واسأل عن حاله","اتصل بجدّك أو ستّك واسأل عنه"],
+ ["سلّم على ثلاثة أشخاص اليوم بابتسامة","سلّم ع ٣ أشخاص وأنت مبتسم"],
+ ["ساعد أمّك بشيء قبل أن تطلب","ساعد أمك بشي قبل ما تطلب"],
+ ["امدح زميلًا بصدق في شيء يُحسنه","امدح زميلك بشي بيعرف يعمله"],
+ ["تصدّق بشيء ولو قليل، واكتمه","تصدّق بشي ولو قليل وما تحكي لحدا"],
+ ["العب مع أخيك الصغير عشر دقائق كاملة","العب مع أخوك الصغير ١٠ دقايق"],
+ ["احفظ آية قصيرة وردّدها قبل النوم","احفظ آية قصيرة وردّدها قبل ما تنام"],
+ ["اسكت مرة واحدة اليوم وأنت غاضب","اسكت مرة اليوم وأنت معصّب"],
+ ["قل لمعلّمتك: شكرًا لك","قول لمعلمتك: شكرًا"],
+ ["رتّب سريرك وغرفتك دون أن يطلب منك أحد","رتّب سريرك وأوضتك بدون ما حدا يقول لك"],
+ ["اعتذر لمن أخطأت عليه ولو بكلمة","اعتذر لحدا غلطت عليه ولو بكلمة"],
+ ["اجلس مع من يجلس وحده في الفسحة","اقعد مع يلي قاعد لحاله بالفسحة"]
+];
+
+const DUAS = [
+ { d:["حسبنا الله ونعم الوكيل","حسبنا الله ونعم الوكيل"], w:["عند الخوف أو حين يهدّدني أحد","لما بخاف أو حدا بيهدّدني"], m:["الله يكفيني ويتولّى أمري.","الله بيكفيني وبيدبّر أمري."] },
+ { d:["أعوذ بالله من الشيطان الرجيم","أعوذ بالله من الشيطان الرجيم"], w:["عند اشتداد الغضب","لما يشتدّ العصب"], m:["أحتمي بالله فيهدأ قلبي.","بحتمي بالله فبيهدا قلبي."] },
+ { d:["ربِّ اشرح لي صدري ويسّر لي أمري","ربِّ اشرح لي صدري ويسّر لي أمري"], w:["قبل الكلام أمام الناس أو الامتحان","قبل ما أحكي قدّام الناس أو قبل الامتحان"], m:["يا ربّ طمئنّي وسهّل عليّ.","يا ربّ طمنّي وسهّل عليّ."] },
+ { d:["اللهم لا سهل إلا ما جعلته سهلًا","اللهم لا سهل إلا ما جعلته سهلًا"], w:["عند الواجب الصعب أو المهمة الشاقة","لما يكون الواجب صعب"], m:["أنت وحدك تجعل الصعب سهلًا.","أنت بتخلّي الصعب سهل."] },
+ { d:["يا حيّ يا قيّوم برحمتك أستغيث","يا حيّ يا قيّوم برحمتك أستغيث"], w:["عند الحزن أو الضيق","لما أحزن أو أضيق"], m:["أطلب رحمة الله فيفرّج عنّي.","بطلب رحمة الله فبيفرّج عنّي."] },
+ { d:["الحمد لله على كلّ حال","الحمد لله على كلّ حال"], w:["في نهاية يوم صعب","بآخر يوم تعبان"], m:["الشكر يجعل اليوم الصعب خفيفًا.","الشكر بيخفّف اليوم الصعب."] }
+];
+
+const BADGES = [
+ ["وسام البِرّ","وسام البِرّ"],["وسام صلة الرحم","وسام صلة الرحم"],["وسام الصحبة","وسام الصحبة"],
+ ["وسام الثبات","وسام الثبات"],["وسام الاعتراف","وسام الاعتراف"],["وسام القلب القوي","وسام القلب القوي"]
+];
+const t = a => a[state.lang];
+const ar = n => String(n).replace(/\d/g, d => "٠١٢٣٤٥٦٧٨٩"[d]);
+
+const WORLDS = [
+  { name:["في البيت","بالبيت"], hue:"#E0794A", tint:"#FBEDE4" },
+  { name:["عند الأقارب","عند الأهل"], hue:"#DFA22B", tint:"#FBF0DA" },
+  { name:["في المدرسة","بالمدرسة"], hue:"#3C7FB8", tint:"#E6F0F8" },
+  { name:["إذا ضايقني أحد","إذا حدا ضايقني"], hue:"#7C6BC4", tint:"#EDEBF9" },
+  { name:["مواقف محرجة","مواقف بتحرج"], hue:"#3E9D7A", tint:"#E4F2EC" },
+  { name:["شجاعة وثبات","شجاعة وقوّة"], hue:"#CE6389", tint:"#FAE9EF" }
+];
+
+const Q = [
+[ // 0 — البيت
+ { art:"parents",
+   q:["أمك تناديك وأنت في أمتع لحظة من لعبتك. ماذا تفعل؟","أمك بتناديك وأنت بتلعب. شو بتعمل؟"],
+   o:[["أقول: حاضر يا أمي، وأترك اللعبة وأذهب","بقول: حاضر يا ماما، وبروح"],
+      ["أُكمل اللعب حتى أنتهي ثم أذهب","بكمّل اللعب وبعدين بروح"],
+      ["أقول: أُفٍّ، دائمًا تنادينني","بقول: أُفّ، دايمًا بتنادي"]],
+   ok:0,
+   w:[["الإجابة السريعة برٌّ، واللعبة تنتظرك ولا تنتظرك أمك.","الرد بسرعة أحلى شي، واللعبة بتستنّى."],
+      ["التأخير المتعمّد يُتعب أمك، ونداء الأم مقدَّم على اللعب.","تأخيرك بتعب أمك، ونداها أهم من اللعب."],
+      ["كلمة «أُف» نهى الله عنها، وهي أصغر كلمة أذى ومع ذلك مُنعت.","كلمة «أُفّ» ما بتنقال للأم أبدًا، الله نهى عنها."]],
+   tip:["﴿فلا تقل لهما أفٍّ ولا تنهرهما وقل لهما قولًا كريمًا﴾","الله قال: ما تقول لأمك وأبوك حتى كلمة «أُفّ»."] },
+
+ { art:"sibBig",
+   q:["تريد قلم أخيك الكبير وهو ليس في الغرفة. ماذا تفعل؟","بدك قلم أخوك الكبير وهو مش موجود. شو بتعمل؟"],
+   o:[["آخذه بسرعة وأُعيده قبل أن يعود","بآخذه بسرعة وبرجّعه"],
+      ["أنتظره وأسأله: هل تسمح لي؟","بستنّاه وبسأله: بتسمح لي؟"],
+      ["آخذه ولا أخبره أبدًا","بآخذه وما بخبّره"]],
+   ok:1,
+   w:[["أخذ الشيء بلا إذن لا يصير حلالًا لأنك ستُعيده.","لو رح ترجّعه، برضو ما بينفع تاخده بدون إذن."],
+      ["الاستئذان يحفظ المحبة بينكما، وغالبًا سيوافق ويفرح بك.","لما تستأذن بيحبك أكثر، وغالبًا بيوافق."],
+      ["الكتمان هنا بداية عادة سيئة، وأخوك سيفقد ثقته بك.","إذا خبّيت، بيصير ما بيثق فيك."]],
+   tip:["«لا يحلّ مال امرئ مسلم إلا بطيب نفس منه»","ما بناخذ غرض حدا إلا لما يرضى هو."] },
+
+ { art:"sibSmall",
+   q:["أخوك الصغير هدم برجك من المكعبات وضحك. ماذا تفعل؟","أخوك الصغير كسر برجك وضحك. شو بتعمل؟"],
+   o:[["أصرخ عليه وأكسر لعبته","بزعق عليه وبكسر لعبته"],
+      ["أدفعه بعيدًا حتى لا يقترب مني","بدفشه بعيد عني"],
+      ["أتنفّس وأقول: لا بأس، تعال نبنيه معًا","بتنفّس وبقول: عادي، تعال نبنيه سوا"]],
+   ok:2,
+   w:[["الانتقام يعلّمه الانتقام، وأنت قدوته الأولى.","لما تنتقم، بيتعلّم منك ينتقم."],
+      ["الدفع قد يؤذيه، وهو أصغر من أن يفهم كل شيء.","ممكن يتأذّى، وهو لسا صغير ما بيفهم."],
+      ["رحمة الصغير من أجمل ما يكون، وبناؤه معك يجعله يحبّك ويقلّدك في الخير.","لما ترحمه بيحبك وبيقلّدك بالحلو."]],
+   tip:["«ليس منا من لم يرحم صغيرنا ويوقّر كبيرنا»","الكبير بيرحم الصغير، والصغير بيحترم الكبير."] },
+
+ { art:"parents",
+   q:["أبوك عاد من العمل متعبًا وجلس. ماذا تفعل؟","بابا رجع تعبان من الشغل. شو بتعمل؟"],
+   o:[["أُحضر له الماء وأخفض صوت اللعب","بجيب له مي وبخفّض صوتي"],
+      ["أطلب منه أن يخرج معي الآن","بقول له: طلّعني هلق"],
+      ["أرفع صوت التلفاز لأنه وقتي","بعلّي صوت التلفزيون"]],
+   ok:0,
+   w:[["الخدمة الصغيرة في وقتها أحبّ من هدية كبيرة في غير وقتها.","خدمة صغيرة بوقتها أحلى من هدية كبيرة."],
+      ["طلبك ليس خطأ، لكن اختيار الوقت من حسن الخلق؛ أمهله حتى يرتاح.","طلبك مش غلط، بس استنّى يرتاح شوي."],
+      ["إزعاجه بعد تعبه يؤذيه، والبيت يهدأ لأجل من يتعب لأجلنا.","تعبان، ولازم نهدّي عشانه."]],
+   tip:["بِرُّ الوالدين لا ينتظر مناسبة؛ كوب ماء يكفي.","البرّ ما بده مناسبة، كاسة مي بتكفي."] }
+],
+[ // 1 — الأقارب
+ { art:"relatives",
+   q:["دخلت بيت جدّك ووجدت الكبار جالسين. ماذا تفعل؟","فتّ ع بيت جدّك والكبار قاعدين. شو بتعمل؟"],
+   o:[["أمرّ بسرعة إلى غرفة الأطفال","بمرق بسرعة ع أوضة الولاد"],
+      ["أقول: السلام عليكم، وأسلّم عليهم وأُقبّل رأس جدّي","بقول: السلام عليكم، وبسلّم وببوس راس جدّي"],
+      ["أجلس صامتًا وأفتح الهاتف","بقعد ساكت وبفتح الموبايل"]],
+   ok:1,
+   w:[["المرور بلا سلام يكسر قلوبهم وهم ينتظرونك.","بيزعلوا لما تمرق بدون سلام."],
+      ["السلام أول الهدايا، وتقبيل رأس الكبير يزرع محبة تبقى في القلب سنوات.","السلام أول هدية، وبوسة راس جدّك بتفرّحه كتير."],
+      ["الجلوس الصامت مع الهاتف يجعلك غائبًا وأنت حاضر.","إذا بتلعب بالموبايل، بتكون غايب وأنت موجود."]],
+   tip:["«أفشوا السلام بينكم تحابّوا»","سلّم على الناس بتحبّهم وبيحبّوك."] },
+
+ { art:"peace",
+   q:["عمّتك بعيدة ولم ترها منذ زمن. ما أحسن تصرّف؟","عمّتك بعيدة وما شفتها من زمان. شو أحسن شي؟"],
+   o:[["أنتظر حتى تتصل هي أولًا","بستنّى هي تتصل"],
+      ["أطلب من أمي أن أتصل بها وأسأل عن حالها","بطلب من ماما أتصل فيها وأسأل عنها"],
+      ["لا شيء، سأراها في العيد","ولا شي، بشوفها بالعيد"]],
+   ok:1,
+   w:[["من ينتظر دائمًا قد تنقطع الرحم بين اثنين ينتظران.","إذا كلّكم مستنّين، بتنقطع العلاقة."],
+      ["الواصل هو من يبدأ، ومكالمة قصيرة تصنع فرحًا كبيرًا.","الشاطر يلي بيبدأ، ومكالمة صغيرة بتفرّحها كتير."],
+      ["الانتظار الطويل يجعل الصلة باردة، والقلوب تحتاج تذكيرًا.","لو استنّيت كثير، بتبرد العلاقة."]],
+   tip:["«ليس الواصل بالمكافئ، ولكن الواصل من إذا قُطعت رحمه وصلها»","الوصل الحقيقي: تتصل حتى لو ما اتصلوا فيك."] },
+
+ { art:"sibSmall",
+   q:["ابن خالك أصغر منك ويريد اللعب بسيارتك الجديدة. ماذا تفعل؟","ابن خالك صغير وبدّه سيارتك الجديدة. شو بتعمل؟"],
+   o:[["أرفض، فهي جديدة وقد يكسرها","بقول لأ، جديدة وبيكسّرها"],
+      ["أُعطيه لعبة قديمة مكسورة وأحتفظ بالجديدة","بعطيه لعبة قديمة مكسورة"],
+      ["ألعب معه وأُريه كيف يستعملها بلطف","بلعب معه وبعلّمه كيف يستعملها"]],
+   ok:2,
+   w:[["خوفك مفهوم، لكن الضيف الصغير أهمّ من لعبة.","خوفك عادي، بس الضيف أهم من لعبة."],
+      ["إعطاء المكسور فيه خداع، والصغير يشعر بذلك ويحزن.","المكسورة بتزعّله، وبيحسّ إنك خدعته."],
+      ["اللعب معه يحفظ لعبتك ويكسبك قلبه؛ هذا هو الذكاء مع الخلق.","لما تلعب معه، بتحمي لعبتك وبتكسب قلبه."]],
+   tip:["﴿ويؤثرون على أنفسهم ولو كان بهم خصاصة﴾","الإيثار: تعطي غيرك وأنت بتحب الشي."] }
+],
+[ // 2 — المدرسة
+ { art:"teacher",
+   q:["عندك سؤال أثناء شرح المعلمة. ماذا تفعل؟","عندك سؤال والمعلمة بتشرح. شو بتعمل؟"],
+   o:[["أنادي المعلمة بصوت عالٍ","بنادي المعلمة بصوت عالي"],
+      ["أرفع يدي وأنتظر إذنها","برفع إيدي وبستنّى تأذن لي"],
+      ["أسأل زميلي همسًا أثناء الشرح","بسأل صاحبي وهي بتشرح"]],
+   ok:1,
+   w:[["الصوت العالي يقطع الدرس على الجميع، لا عليك وحدك.","صوتك العالي بيقطع الدرس ع الكل."],
+      ["رفع اليد أدبٌ يجعل سؤالك مسموعًا ومحترمًا.","لما ترفع إيدك، بيسمعوا سؤالك ويحترموه."],
+      ["الهمس تشويش، وستفوتك أنت وزميلك بقية الشرح.","الهمس بيشوّش، وبتفوتك الباقي."]],
+   tip:["من أدب طالب العلم: الإنصات، ثم السؤال بإذن.","أدب الطالب: يسمع منيح، وبعدين يسأل."] },
+
+ { art:"classmates",
+   q:["زميلك نسي طعامه وأنت تأكل. ماذا تفعل؟","صاحبك نسي أكله وأنت بتوكل. شو بتعمل؟"],
+   o:[["أُنهي طعامي بسرعة قبل أن يطلب","بخلّص أكلي بسرعة قبل ما يطلب"],
+      ["أقول له: هذه مشكلتك، تذكّره غدًا","بقول له: مشكلتك، تذكّر بكرا"],
+      ["أُشاركه نصف طعامي دون أن أُحرجه","بقاسمه أكلي بدون ما أحرجه"]],
+   ok:2,
+   w:[["الأكل بسرعة هروب من موقف صغير يصنع صديقًا كبيرًا.","بتهرب من موقف صغير بيجيب لك صاحب."],
+      ["الكلمة القاسية تجرح أكثر من الجوع.","الكلمة القاسية بتوجع أكثر من الجوع."],
+      ["المشاركة بلا إحراج قمّة الذوق، وستجدها يوم تنسى أنت.","لما تقاسمه بهدوء، بيرجع لك الخير لما تنسى أنت."]],
+   tip:["«أحبّ الأعمال إلى الله سرورٌ تُدخله على مسلم»","أحلى شي عند الله إنك تفرّح حدا."] },
+
+ { art:"friends",
+   q:["صديقك أخطأ عليك ثم جاء يعتذر. ماذا تفعل؟","صاحبك غلط عليك وإجا يعتذر. شو بتعمل؟"],
+   o:[["أقول: سامحتك، ولا أذكّره بخطئه بعدها","بقول: سامحتك، وما بعيّرو فيها"],
+      ["أُسامحه لكن أُذكّره كلما اختلفنا","بسامحه بس بذكّرو كل مرة نتخانق"],
+      ["لا أُكلّمه أسبوعًا حتى يتعلّم","ما بحكيه أسبوع لحتى يتعلّم"]],
+   ok:0,
+   w:[["العفو الكامل يُطفئ النار ويعيد الصداقة أقوى.","لما تسامح كامل، بترجع الصداقة أقوى."],
+      ["التذكير بالخطأ عقوبة لا تنتهي، وهو قد اعتذر مرة.","إذا بتعيّرو، العقوبة ما بتخلص وهو اعتذر."],
+      ["الهجر فوق ثلاث ليال لا يجوز، والقطيعة تُنسي المحبة.","ما بنهجر صاحبنا أكثر من ثلاث أيام."]],
+   tip:["«لا يحلّ لمسلم أن يهجر أخاه فوق ثلاث»","بعد ثلاث أيام لازم ترجع تسلّم عليه."] },
+
+ { art:"noBad",
+   q:["سمعت زميلًا يتكلّم بسوء عن صديقك الغائب. ماذا تفعل؟","سمعت واحد بيحكي ع صاحبك وهو غايب. شو بتعمل؟"],
+   o:[["أستمع وأضحك معه","بسمع وبضحك معه"],
+      ["أقول: لا نتكلّم عن أحد في غيابه، ثم أُغيّر الموضوع","بقول: ما منحكي ع حدا غايب، وبغيّر الموضوع"],
+      ["أنقل الكلام لصديقي ليغضب منه","بنقل الحكي لصاحبي لحتى يزعل"]],
+   ok:1,
+   w:[["الضحك مشاركة في الغِيبة، والساكت الراضي كالقائل.","لما تضحك، بتكون شاركت بالغيبة."],
+      ["دفاعك عن غائب يحفظ ظهرك أنت أيضًا يوم تغيب.","لما تدافع عن الغايب، بيدافعوا عنك لما تغيب."],
+      ["نقل الكلام نميمة تُشعل عداوة لم تكن موجودة.","نقل الحكي بيولّع مشكلة ما كانت موجودة."]],
+   tip:["﴿ولا يغتب بعضكم بعضًا﴾","ما منحكي ع حدا وهو مش موجود."] },
+
+ { art:"mirror",
+   q:["كسرت شيئًا في الصف ولم يرك أحد. ماذا تفعل؟","كسرت شي بالصف وما حدا شافك. شو بتعمل؟"],
+   o:[["أسكت، فلا أحد يعلم","بسكت، ما حدا بيعرف"],
+      ["أقول إن زميلي هو من فعلها","بقول صاحبي هو يلي عمل"],
+      ["أعترف وأعتذر وأُصلح ما استطعت","بعترف وبعتذر وبصلّح إذا بقدر"]],
+   ok:2,
+   w:[["الله يراك وإن لم يرك أحد، والسكوت يثقل القلب.","الله شايفك، والسكوت بيضلّ يوجع قلبك."],
+      ["اتهام البريء ظلم أشدّ من الكسر نفسه.","لما تتّهم بريء، الغلط بيصير أكبر."],
+      ["الاعتراف شجاعة، وأكثر الناس يعذرون من صدق.","الاعتراف شجاعة، والناس بتسامح الصادق."]],
+   tip:["«إن الصدق يهدي إلى البِرّ»","الصدق بيوصّلك لكل خير."] }
+],
+[ // 3 — التنمّر
+ { art:"stop",
+   q:["زميل يُناديك بلقب يضايقك أمام الأولاد. ماذا تفعل؟","في ولد بينادي عليك لقب بيضايقك. شو بتعمل؟"],
+   o:[["أُناديه بلقب أسوأ ليتألّم مثلي","بناديه لقب أوحش لحتى يوجعه"],
+      ["أنظر إليه وأقول بثبات: توقّف، هذا لا يعجبني، ثم أمشي","بطالعه وبقول بثبات: بطّل، ما بيعجبني، وبمشي"],
+      ["أبكي وأجلس وحدي في الزاوية","ببكي وبقعد لحالي بالزاوية"]],
+   ok:1,
+   w:[["ردّ الشتيمة بالشتيمة يجعلك مثله، والناس لا تُفرّق بينكما.","لما ترد شتيمة بشتيمة، بتصير متلو."],
+      ["جملة قصيرة بصوت ثابت ثم انصراف: هذا أقوى ردّ، لأنك لم تعطه ما يريد.","جملة قصيرة وبتمشي: هذا أقوى ردّ."],
+      ["دموعك ليست عيبًا، لكن الجلوس وحدك يجعله يكرّر فعله؛ ابقَ قرب أصدقائك.","البكاء مش عيب، بس ما تقعد لحالك؛ اضّل مع أصحابك."]],
+   tip:["«المسلم من سلم الناس من لسانه ويده»","المسلم ما بيأذي حدا لا بلسانه ولا بإيده."] },
+
+ { art:"help",
+   q:["تكرّر الأمر أكثر من مرة ولم يتوقف. ماذا تفعل؟","صار كذا مرة وما بطّل. شو بتعمل؟"],
+   o:[["أكتم الأمر حتى لا يقولوا عني «واشٍ»","بسكت لحتى ما يقولوا عني «نمّام»"],
+      ["أجمع أصدقائي ضدّه لنُخيفه","بجمع أصحابي ضدّه لنخوّفه"],
+      ["أُخبر معلمتي ووالديّ في اليوم نفسه","بخبّر المعلمة وأهلي بنفس اليوم"]],
+   ok:2,
+   w:[["الكتمان يُطيل الأذى؛ طلب الحق شجاعة وليس وشاية.","إذا سكتّ، بيطول الأذى. طلب حقّك شجاعة."],
+      ["مجموعة ضد واحد تنمّرٌ جديد، ولو كان لك حقّ.","مجموعة ضد واحد بتصير تنمّر جديد."],
+      ["إخبار الكبار في وقته يوقف الأذى قبل أن يكبر.","لما تخبّر بسرعة، بيوقف قبل ما يكبر."]],
+   tip:["طلب المساعدة من الكبار حقّ، وليس وشاية.","تطلب مساعدة الكبار = حقّك، مش نميمة."] },
+
+ { art:"shield",
+   q:["دفعك بقوة وآذى جسدك. ما التصرّف الصحيح؟","دفشك بقوة ووجعك. شو التصرّف الصح؟"],
+   o:[["أضربه ضربًا أشدّ ليتعلّم الدرس","بضربه أقوى لحتى يتعلّم"],
+      ["أدفع عن نفسي بقدر ما يكفّ الأذى، ثم أبتعد وأُخبر الكبار","بدفع عن حالي بس، وبعدين ببعد وبخبّر الكبار"],
+      ["أسكت وأُخفي الأمر عن الجميع","بسكت وما بخبّر حدا"]],
+   ok:1,
+   w:[["الزيادة في الردّ تحوّلك من مظلوم إلى ظالم.","إذا زدت بالرد، بتصير أنت الظالم."],
+      ["لك أن تدفع عن جسدك بقدر الحاجة؛ القوة الحقيقية أن تتوقف عند حدّك.","بتدفع عن حالك بس بقدر ما بتحتاج، وبتوقف."],
+      ["إخفاء الأذى الجسدي خطر؛ جسدك أمانة وأهلك يحتاجون أن يعرفوا.","لازم تخبّر، جسمك أمانة."]],
+   tip:["﴿فمن اعتدى عليكم فاعتدوا عليه بمثل ما اعتدى عليكم﴾","تدفع عن حالك بقدّ ما صار عليك، بلا زيادة."] },
+
+ { art:"bystander",
+   q:["ترى زميلًا يسخر منه الأولاد وأنت لست طرفًا. ماذا تفعل؟","شفت ولد عم بيتسخّروا منه وأنت مالك دخل. شو بتعمل؟"],
+   o:[["أضحك مع الجميع حتى لا أبدو غريبًا","بضحك معهم لحتى ما أبيّن غريب"],
+      ["أمشي وأتظاهر أنّي لم أرَ شيئًا","بمشي وبعمل حالي ما شفت"],
+      ["أقف بجانبه وآخذه معي وأُخبر المعلمة","بوقف جنبه وبآخده معي وبخبّر المعلمة"]],
+   ok:2,
+   w:[["ضحكك وقودٌ للسخرية؛ لولا الضاحكون لتوقّف الساخر.","ضحكك بيشجّعهم؛ لولا الضحك كان وقف."],
+      ["الصمت أمام الظلم يجعل الضحية وحيدة تمامًا.","لما تسكت، بيضلّ لحاله."],
+      ["وقوفك بجانبه يكسر الموقف كلّه، وقد تُنقذ يومه.","لما توقف جنبه، بتوقف المشكلة كلها."]],
+   tip:["«انصر أخاك ظالمًا أو مظلومًا» ونصر الظالم أن تمنعه من الظلم.","انصر صاحبك: تحميه إذا مظلوم، وتوقّفه إذا هو الغلطان."] },
+
+ { art:"confident",
+   q:["بعد أيام هدأ وجاء يقف قربكم في الملعب. ماذا تفعل؟","بعد كم يوم هدي وإجا وقف جنبكم بالملعب. شو بتعمل؟"],
+   o:[["أُذكّر الجميع بما فعله بي","بذكّر الكل شو عمل فيّي"],
+      ["أُسلّم عليه وأدعوه للّعب، وأبقى منتبهًا","بسلّم عليه وبعزمه يلعب، وبضلّ منتبه"],
+      ["أطلب من الجميع تجاهله دائمًا","بقول للكل ما حدا يحكيه"]],
+   ok:1,
+   w:[["التذكير أمام الناس يُشعل الموقف من جديد.","لما تذكّرها قدّام الكل، بترجع المشكلة."],
+      ["الدفع بالتي هي أحسن قد يجعله صديقًا، وانتباهك يحفظ حقّك.","لما تعامله بالحلو ممكن يصير صاحبك، وانتباهك بيحميك."],
+      ["مقاطعته الجماعية تنمّر معكوس، وأنت أكرم من ذلك.","تخلّي الكل يقاطعه = تنمّر جديد."]],
+   tip:["﴿ادفع بالتي هي أحسن فإذا الذي بينك وبينه عداوة كأنه وليٌّ حميم﴾","قابل السيئة بالحلوة، بينقلب عدوّك صاحبك."] }
+],
+[ // 4 — مواقف محرجة
+ { art:"teacher",
+   q:["أجبت خطأً أمام الصف فضحك بعض الأولاد. ماذا تفعل؟","جاوبت غلط قدّام الصف وضحكوا عليك. شو بتعمل؟"],
+   o:[["أبتسم وأقول: أخطأت وسأتعلّمها، ثم أرفع يدي مرة أخرى","ببتسم وبقول: غلطت ورح أتعلّمها، وبرفع إيدي كمان مرة"],
+      ["أضع رأسي على الطاولة ولا أُجيب بعد اليوم","بحطّ راسي ع الطاولة وما بجاوب بعد هيك"],
+      ["أشتمهم وأقول لهم: وأنتم أغبياء","بشتمهم وبقول: وانتو أغبيا"]],
+   ok:0,
+   w:[["من يعترف بخطئه أمام الناس أقوى من كل الضاحكين، والمعلّمة ستحترمك.","لما تعترف بغلطك، بتصير أقوى من كل يلي عم يضحكوا."],
+      ["الانسحاب يجعل الخطأ الصغير خوفًا كبيرًا يلازمك سنوات.","إذا انسحبت، الغلطة الصغيرة بتصير خوف كبير."],
+      ["الشتيمة تنقل المعركة إليك، وتُنسي الجميع أنك كنت مجتهدًا.","الشتيمة بتخلّي المشكلة عليك أنت."]],
+   tip:["«كل ابن آدم خطّاء وخير الخطّائين التوابون»","كلنا بنغلط، وأحسننا يلي بيصلّح غلطه."] },
+
+ { art:"peace",
+   q:["خسرت في المسابقة وفاز صديقك. ماذا تفعل؟","خسرت بالمسابقة وربح صاحبك. شو بتعمل؟"],
+   o:[["أقول: المسابقة ظالمة، وأترك المكان","بقول: المسابقة ظالمة، وبطلع"],
+      ["أُهنّئه بصدق وأسأله: كيف تدرّبت؟","بهنّيه وبسأله: كيف تدرّبت؟"],
+      ["لا أُكلّمه حتى أفوز عليه","ما بحكيه لحتى أغلبه"]],
+   ok:1,
+   w:[["اتهام المسابقة يريحك دقيقة ويمنعك من التعلّم سنة.","لما تقول ظالمة، بترتاح دقيقة وبتخسر تعلّم سنة."],
+      ["التهنئة الصادقة تصنع قلبًا كبيرًا، وسؤالك عن تدريبه يجعلك أقوى في المرة القادمة.","لما تهنّيه وتسأله، بتصير أشطر المرة الجاي."],
+      ["الغيرة الصامتة تأكل الصداقة وتُتعبك أنت وحدك.","الغيرة بتوجعك أنت وبتخسّرك صاحبك."]],
+   tip:["الفائز الحقيقي من يفرح لأخيه ثم يتدرّب أكثر.","الفايز الحقيقي بيفرح لصاحبه وبيتدرّب أكثر."] },
+
+ { art:"shield",
+   q:["قال لك أولاد: خذ الحلوى من الدكان بلا دفع، إن كنت شجاعًا. ماذا تفعل؟","قالوا لك: خود الحلو من الدكانة بلا ما تدفع إذا شجاع. شو بتعمل؟"],
+   o:[["أفعلها مرة واحدة حتى لا يقولوا عني جبان","بعملها مرة وحدة لحتى ما يقولوا جبان"],
+      ["أرفض لكن أبقى معهم أشاهد ما يفعلون","برفض بس بضلّ معهم وبتفرّج"],
+      ["أقول: هذه سرقة وليست شجاعة، وأبتعد وأُخبر أهلي","بقول: هاي سرقة مش شجاعة، وببعد وبخبّر أهلي"]],
+   ok:2,
+   w:[["مرة واحدة تكفي ليصير لك ملف عند الناس وذنبٌ عند الله.","مرة وحدة بتكفي لتوقع بمشكلة كبيرة."],
+      ["الحاضر الساكت شريك، وسيُذكر اسمك معهم إن انكشف الأمر.","إذا وقفت تتفرّج، بتصير معهم بنفس المشكلة."],
+      ["أشجع ولد في الموقف هو من يقول «لا» ويمشي، لا من يخاف كلام الناس.","الشجاع يلي بيقول لأ وبيمشي، مش يلي بيخاف من حكي الناس."]],
+   tip:["الشجاعة أن تقول «لا» حين يقول الجميع «نعم».","الشجاعة تقول لأ لما الكل يقول نعم."] },
+
+ { art:"confident",
+   q:["وقفت لتُلقي النشيد أمام الحضور فنسيت الكلمات. ماذا تفعل؟","وقفت تحكي قدّام الناس ونسيت الكلام. شو بتعمل؟"],
+   o:[["أنزل عن المسرح راكضًا","بنزل راكض عن المسرح"],
+      ["أتنفّس نفسًا عميقًا، أبتسم، وأُكمل ما أذكره","بتنفّس عميق، ببتسم، وبكمّل يلي بتذكّره"],
+      ["أبكي وأقول: لن أشارك في حياتي","ببكي وبقول: عمري ما رح أشارك"]],
+   ok:1,
+   w:[["الهروب يجعل الخوف أكبر في المرة القادمة، والناس ينسون خطأك سريعًا.","لما تهرب، الخوف بيكبر أكتر المرة الجاي."],
+      ["توقّفٌ قصير وابتسامة يجعلان الجمهور معك لا ضدّك؛ هذه هي رباطة الجأش.","وقفة صغيرة وابتسامة بتخلّي الناس معك."],
+      ["قرار «لن أشارك أبدًا» عقوبة كبيرة على خطأ صغير.","«عمري ما رح أشارك» عقوبة كبيرة ع غلطة صغيرة."]],
+   tip:["﴿ربِّ اشرح لي صدري ويسّر لي أمري﴾","ادعِ: ربّي سهّل عليّ وثبّتني."] },
+
+ { art:"help",
+   q:["ضاع منك أهلك في السوق. ما أول تصرّف؟","ضعت عن أهلك بالسوق. شو أول شي بتعمل؟"],
+   o:[["أجري وأبحث عنهم في كل المحلات","بركض وبدوّر عليهم بكل المحلات"],
+      ["أخرج مع شخص لطيف عرض أن يوصلني إليهم","بطلع مع واحد لطيف قال بوصّلك"],
+      ["أبقى مكاني وأطلب المساعدة من موظف المكان أو أمٍّ معها أطفال","بضلّ بمكاني وبطلب مساعدة من موظّف أو مَرَة معها ولاد"]],
+   ok:2,
+   w:[["الجري يبعدك أكثر، وأهلك يبحثون في المكان الذي فقدوك فيه.","لما تركض بتبعد أكتر عنهم."],
+      ["لا تخرج مع أحد أبدًا مهما كان لطيفًا؛ اطلب المساعدة ولا تغادر المكان.","ما تطلع مع حدا أبدًا، اطلب مساعدة وضلّك بمكانك."],
+      ["الثبات في مكانك وطلب المساعدة من موظف رسمي أسرع طريق لتجدهم.","إذا ضلّيت بمكانك وطلبت مساعدة، بيلاقوك بسرعة."]],
+   tip:["احفظ اسم أبيك كاملًا ورقم هاتف أهلك؛ هذه شجاعة الاستعداد.","احفظ اسم أبوك كامل ورقم تلفون أهلك."] }
+],
+[ // 5 — شجاعة وثبات
+ { art:"confident",
+   q:["طلبت المعلمة متطوّعًا يقرأ أمام الصف، وأنت تخاف. ماذا تفعل؟","المعلمة بدها حدا يقرا قدّام الصف وأنت خايف. شو بتعمل؟"],
+   o:[["أُخفض رأسي ولا أُشارك أبدًا","بطأطئ راسي وما بشارك"],
+      ["أتنفّس، وأقول: ربِّ اشرح لي صدري، وأرفع يدي وأبدأ ببطء","بتنفّس وبقول: ربّي سهّل عليّ، وبرفع إيدي وببلّش بهدوء"],
+      ["أقرأ بسرعة شديدة لأنتهي وأنا أنظر إلى الأرض","بقرا بسرعة لحتى أخلص وأنا مطالع ع الأرض"]],
+   ok:1,
+   w:[["كل مرة تهرب فيها يكبر الخوف قليلًا؛ وكل مرة تُقدم يصغر.","كل مرة تهرب بيكبر الخوف، وكل مرة تجرّب بيصغر."],
+      ["الدعاء يُهدّئ القلب، والبدء البطيء يُثبّت الصوت؛ هكذا يتدرّب الشجعان.","الدعاء بيهدّي، والبداية البطيئة بتثبّت صوتك."],
+      ["السرعة تُخفي صوتك ولا تُخفي خوفك؛ ارفع رأسك وتمهّل.","السرعة ما بتخفّي الخوف، ارفع راسك وتمهّل."]],
+   tip:["﴿ربِّ اشرح لي صدري ويسّر لي أمري واحلل عقدة من لساني﴾","دعوة موسى: ربّي ثبّتني وسهّل لساني."] },
+
+ { art:"stop",
+   q:["اشتدّ غضبك من زميل حتى احمرّ وجهك. ماذا تفعل أولًا؟","عصّبت كتير ع زميلك. شو أول شي بتعمل؟"],
+   o:[["أضربه الآن قبل أن أهدأ","بضربه هلق قبل ما أهدا"],
+      ["أكتم غضبي وأُخطّط للانتقام غدًا","بكتم غضبي وبفكّر بالانتقام بكرا"],
+      ["أسكت، وأجلس، وأشرب ماءً أو أتوضّأ، ثم أتكلّم بعد أن أهدأ","بسكت وبقعد وبشرب مي أو بتوضّا، وبعدين بحكي"]],
+   ok:2,
+   w:[["الضربة في لحظة الغضب تُندمك سنة كاملة.","ضربة بلحظة عصبية بتندم عليها كتير."],
+      ["الانتقام المؤجّل يجعل الغضب يسكن قلبك أيامًا ويؤذيك أنت أولًا.","الانتقام المؤجّل بيضلّ يوجعك أنت."],
+      ["السكوت والجلوس والماء تُطفئ الغضب، ثم تتكلّم بعقلك لا بغضبك.","لما تسكت وتقعد وتشرب مي، بيروح العصب وبتحكي بعقلك."]],
+   tip:["«إذا غضب أحدكم فليسكت»، و«ليس الشديد بالصُّرَعة، إنما الشديد من يملك نفسه عند الغضب»","القوي مش يلي بيغلب الناس، القوي يلي بيمسك حاله لما يعصّب."] },
+
+ { art:"mirror",
+   q:["طلب منك صديقك أن تكذب لتُنقذه من العقاب. ماذا تفعل؟","صاحبك طلب منك تكذب لتنقذه من العقاب. شو بتعمل؟"],
+   o:[["أكذب من أجله، فالصديق أهمّ","بكذب عشانه، الصاحب أهم"],
+      ["أقول الصدق برفق، وأطلب أن يُعطى فرصة إن اعتذر وأصلح","بقول الصدق بهدوء، وبطلب يعطوه فرصة إذا اعتذر"],
+      ["أتّهم ولدًا آخر حتى ينجو صديقي","بتّهم ولد تاني لينجو صاحبي"]],
+   ok:1,
+   w:[["الكذبة تُنقذه اليوم وتُسقطك أنت غدًا، والصداقة لا تُبنى على كذب.","الكذبة بتنقذه اليوم وبتوقّعك أنت بكرا."],
+      ["الصدق مع الشفاعة الحسنة أنفع له من كذبة تحميه من التعلّم.","الصدق مع إنك تشفع له أحسن إله من الكذب."],
+      ["اتهام البريء ظلم كبير، ولن يغفره لك قلبك ولا هو.","اتّهام بريء ظلم كبير كتير."]],
+   tip:["الصدق نجاة ولو خفتَ منه، والشفاعة الحسنة بابٌ من الخير.","الصدق بينجّي، وتشفع لصاحبك شي حلو."] },
+
+ { art:"shield",
+   q:["طلب منك أحدهم أن تُريه جسدك أو صورًا، وقال: هذا سرّ بيننا. ماذا تفعل؟","حدا طلب منك تفرجيه جسمك أو صور وقال: هاد سر بيناتنا. شو بتعمل؟"],
+   o:[["أُطيعه حتى لا يغضب مني","بسمع كلامه لحتى ما يزعل"],
+      ["أوافق وأكتم السرّ لأنه طلب مني ذلك","بوافق وبخبّي السر"],
+      ["أقول: لا، هذا خاصّ بي، وأبتعد فورًا وأُخبر أمي أو أبي","بقول: لأ، هذا خاص فيّي، وببعد وبخبّر أمي أو أبي فورًا"]],
+   ok:2,
+   w:[["إرضاء الكبار لا يكون بطاعتهم في شيء يُخيفك أو يُحرجك.","ما منرضي حدا بشي بيخوّفنا أو بيحرجنا."],
+      ["كل سرّ يجعلك خائفًا أو محرجًا يجب أن يعرفه والداك فورًا.","أي سر بيخوّفك لازم أهلك يعرفوه."],
+      ["«لا» كلمة تحميك، وإخبار والديك ليس فضيحة بل حماية.","«لأ» بتحميك، وتخبير أهلك حماية مش فضيحة."]],
+   tip:["جسدك أمانة، ولا سرّ يُكتَم عن الوالدين إذا أخافك أو أحرجك.","جسمك أمانة، وما في سر بينخبّى عن الأهل إذا خوّفك."] },
+
+ { art:"help",
+   q:["شعرت بحزن شديد وأحسست أن لا أحد يفهمك. ماذا تفعل؟","حزنت كتير وحسّيت ما حدا فاهمك. شو بتعمل؟"],
+   o:[["أحبس كل شيء في قلبي","بحبس كل شي بقلبي"],
+      ["أُخرج غضبي على أخي الصغير","بفشّ غضبي بأخوي الصغير"],
+      ["أدعو الله وأُخبر أمي أو أبي أو معلمتي بما أشعر","بدعي الله وبخبّر أمي أو أبي أو معلمتي بشعوري"]],
+   ok:2,
+   w:[["الحزن المكتوم يثقل ويكبر، والقلب يحتاج أن يتكلّم.","الحزن المخبّى بيكبر، وقلبك بده يحكي."],
+      ["من يؤذي الأضعف حين يحزن يزيد حزنه ولا ينقصه.","لما تفشّ بالأصغر منك، بيزيد حزنك مش بيقلّ."],
+      ["الشكوى إلى الله ثم إلى من يحبّك ليست ضعفًا، بل هي أول طريق الراحة.","تحكي لله ولأهلك مش ضعف، هاد أول طريق الراحة."]],
+   tip:["﴿إنما أشكو بثّي وحزني إلى الله﴾","نبيّ الله يعقوب حكى حزنه لله، وما في عيب بهيك."] }
+]
+];
+
+const PRACTICE = [
+ [["حاضر يا أمي","هل أساعدك؟","سامحني","شكرًا لك"],["حاضر يا ماما","بدك مساعدة؟","سامحني","شكرًا"]],
+ [["السلام عليكم","كيف حالكم؟","اشتقت إليكم"],["السلام عليكم","كيفكم؟","اشتقت لكم"]],
+ [["هل تحتاج مساعدة؟","تفضّل","سامحتك","لنلعب سويًّا"],["بدك مساعدة؟","تفضّل","سامحتك","تعال نلعب"]],
+ [["توقّف، هذا لا يعجبني","انتهى الكلام","سأخبر المعلمة إن تكرّر","تعال معي"],["بطّل، ما بيعجبني","خلص الحكي","رح أخبّر المعلمة","تعال معي"]],
+ [["أخطأت وسأتعلّمها","مبارك لك، كيف تدرّبت؟","هذه ليست شجاعة","أحتاج مساعدة من فضلك"],["غلطت ورح أتعلّم","مبروك، كيف تدرّبت؟","هاي مش شجاعة","بدّي مساعدة لو سمحت"]],
+ [["ربِّ اشرح لي صدري","سأتكلّم بعد أن أهدأ","لا، هذا خاصّ بي","أشعر بالحزن وأحتاج أن أتكلّم"],["ربّي سهّل عليّ","رح أحكي لما أهدا","لأ، هذا خاص فيّي","أنا حزين وبدّي أحكي"]]
+];
+
+/* ---------- speech ---------- */
+let voices = [], chosenVoice = null, primed = false, resumeTimer = null;
+const SS = window.speechSynthesis || null;
+
+function loadVoices(){
+  if (!SS) return;
+  voices = SS.getVoices() || [];
+  if (!chosenVoice) chosenVoice = pickArabic();
+}
+function isArabic(v){
+  return /^ar/i.test(v.lang || "") || /arab|عرب|majed|maged|laila|layla|tarik|hala|salma|amira|hamed|zariyah|naayf/i.test(v.name || "");
+}
+function pickArabic(){ return voices.find(isArabic) || null; }
+function primeSpeech(){
+  if (primed || !SS) return;
+  primed = true;
+  try { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; SS.speak(u); } catch(e){}
+  loadVoices();
+  setTimeout(loadVoices, 400);
+}
+if (SS){ loadVoices(); SS.onvoiceschanged = loadVoices; }
+document.addEventListener("pointerdown", primeSpeech, { once:true, capture:true });
+document.addEventListener("keydown", primeSpeech, { once:true, capture:true });
+
+function noteEl(){ return document.getElementById("voiceNote"); }
+function say(msg){ const n = noteEl(); if (n) n.textContent = msg; }
+
+const AUDIO_DIR = "audio/";
+let audioEl = null, audioWorks = null, audioFails = 0;
+function fnv(str){
+  let h = 0x811c9dc5;
+  for (const c of new TextEncoder().encode(str)) h = Math.imul(h ^ c, 0x01000193) >>> 0;
+  return h.toString(16).padStart(8, "0");
+}
+// Once a clip has played, later failures are transient (flaky mobile data) — fall
+// back for that utterance only. Give up on the mp3s entirely just when none ever played.
+function audioFailed(txt){
+  if (audioWorks !== true && ++audioFails >= 3) audioWorks = false;
+  ttsSpeak(txt);
+}
+function speak(txt){
+  if (!state.sound) return;
+  stopSpeech();
+  if (audioWorks === false) return ttsSpeak(txt);
+  if (!audioEl){ audioEl = new Audio(); audioEl.preload = "auto"; }
+  audioEl.onerror = () => audioFailed(txt);
+  audioEl.src = AUDIO_DIR + fnv(txt) + ".mp3";
+  const pr = audioEl.play();
+  if (pr && pr.then) pr.then(() => { audioWorks = true; audioFails = 0; say(""); })
+                       .catch(() => audioFailed(txt));
+}
+function ttsSpeak(txt){
+  if (!state.sound) return;
+  if (!SS){ say("هذا المتصفّح لا يدعم القراءة الصوتية. جرّب Chrome أو Safari أو Edge."); return; }
+  primeSpeech(); loadVoices();
+  if (!voices.length){ say("لم يعثر المتصفّح على أي صوت. افتح «إعدادات الصوت» من الأعلى لمعرفة السبب."); }
+  SS.cancel();
+  setTimeout(() => {
+    const u = new SpeechSynthesisUtterance(txt);
+    if (chosenVoice){ u.voice = chosenVoice; u.lang = chosenVoice.lang || "ar"; } else { u.lang = "ar-SA"; }
+    let started = false;
+    setTimeout(() => { if (!started && !SS.speaking) say("لم يبدأ النطق. غالبًا لا يوجد محرّك نطق في النظام — افتح «إعدادات الصوت» لمعرفة الخطوات."); }, 1500);
+    u.rate = 0.9; u.pitch = 1.05; u.volume = 1;
+    u.onstart = () => { started = true; say(""); };
+    u.onerror = e => {
+      const why = (e && e.error) || "";
+      say(why === "not-allowed"
+        ? "منع المتصفّح تشغيل الصوت هنا. حمّل الملف وافتحه مباشرة في المتصفّح بدل المعاينة المضمّنة."
+        : "تعذّر تشغيل الصوت. افتح «إعدادات الصوت» من الأعلى وجرّب صوتًا آخر.");
+    };
+    try { SS.speak(u); } catch(e){ say("تعذّر تشغيل الصوت في هذه النافذة."); }
+    clearInterval(resumeTimer);
+    resumeTimer = setInterval(() => { if (SS.speaking) SS.resume(); else clearInterval(resumeTimer); }, 6000);
+  }, 130);
+}
+function stopSpeech(){
+  if (SS) SS.cancel();
+  if (audioEl){ try { audioEl.pause(); audioEl.currentTime = 0; } catch(e){} }
+}
+function setVoice(i){ chosenVoice = voices[i] || null; speak(state.lang ? "جرّب، هيك بيصير صوتي" : "تجربة: هكذا سيكون صوتي"); }
+function inFrame(){ try { return window.top !== window.self; } catch(e){ return true; } }
+
+/* ---------- controls ---------- */
+function toggleLang(){ state.lang = state.lang ? 0 : 1; stopSpeech(); render(); }
+function toggleSound(){
+  state.sound = !state.sound; stopSpeech();
+  const b = document.getElementById("btnSound");
+  b.setAttribute("aria-pressed", state.sound);
+  b.textContent = state.sound ? "الصوت يعمل" : "الصوت متوقف";
+}
+function goMap(){ stopSpeech(); state.screen = "map"; render(); }
+function startGame(){
+  const el = document.getElementById("nameIn");
+  if (el) state.name = el.value.trim();
+  goMap();
+}
+function openWorld(w){ stopSpeech(); state.world = w; state.qi = 0; state.picked = -1; state.screen = "play"; render(); }
+function qid(w,i){ return w + "-" + i; }
+
+function pick(i){
+  const q = Q[state.world][state.qi];
+  if (state.picked > -1 && state.picked === q.ok) return;
+  const id = qid(state.world, state.qi);
+  if (!(id in state.first)) state.first[id] = (i === q.ok);
+  state.picked = i;
+  render();
+  const good = i === q.ok;
+  speak(t(q.w[i]));
+}
+function next(){
+  stopSpeech(); state.picked = -1;
+  if (state.qi < Q[state.world].length - 1){ state.qi++; state.screen = "play"; }
+  else state.screen = "worlddone";
+  render();
+}
+function worldStars(w){ return Q[w].reduce((n,_,i) => n + (state.first[qid(w,i)] ? 1 : 0), 0); }
+function totalStars(){ return Q.reduce((n,_,w) => n + worldStars(w), 0); }
+function allDone(){ return Q.every((qs,w) => qs.every((_,i) => qid(w,i) in state.first)); }
+function finish(){ stopSpeech(); state.screen = "cert"; render(); }
+function restart(){ state.first = {}; state.qi = 0; state.picked = -1; goMap(); }
+
+/* ---------- render ---------- */
+function render(){
+  document.getElementById("btnLang").textContent = state.lang ? "العربية الفصحى" : "كلمات سهلة";
+  const s = document.getElementById("screen");
+  if (breathTimer){ clearInterval(breathTimer); breathTimer = null; }
+  s.innerHTML = ({ start:vStart, map:vMap, play:vPlay, worlddone:vWorldDone, cert:vCert, tool:vTool })[state.screen]();
+  window.scrollTo({ top:0, behavior:"smooth" });
+  if (state.screen === "tool" && state.tool === "calm") startBreath();
+}
+function vStart(){
+  return `<div class="card">
+    <div class="art" style="--tint:#FBEDE4">${ART.parents}</div>
+    <h1 style="margin-top:14px">${t(UI.start_h)}</h1>
+    <p>${t(UI.start_p)}</p>
+    <div class="row">
+      <label for="nameIn" class="muted">${t(UI.name_lbl)}</label>
+      <input id="nameIn" type="text" maxlength="24">
+      <button class="big" onclick="startGame()">${t(UI.start_btn)}</button>
+    </div>
+    <p class="note" style="margin-top:12px">${t(UI.how)}</p>
+  </div>`;
+}
+function vMap(){
+  const cards = WORLDS.map((w,i) => {
+    const st = worldStars(i), tot = Q[i].length;
+    return `<button class="world" style="--hue:${w.hue}" onclick="openWorld(${i})">
+      <div class="art" style="--tint:${w.tint}">${ART[["parents","relatives","teacher","stop","confident","shield"][i]]}</div>
+      <div class="lbl"><h3>${t(w.name)}</h3>
+      <div class="stars">${"★".repeat(st)}${"☆".repeat(tot-st)}</div></div></button>`;
+  }).join("");
+  const fin = allDone() ? `<div class="row"><button class="big leaf" onclick="finish()">${t(UI.finish)}</button></div>` : "";
+  return `<div class="card"><h2>${t(UI.map_h)}</h2>
+    <p class="muted">${"★"} ${ar(totalStars())} ${t(UI.of)} ${ar(Q.flat().length)}</p>
+    <div class="worlds">${cards}</div>${fin}
+    <h3 style="margin:20px 0 0;font-size:17px">${t(UI.tools_h)}</h3>
+    <div class="row" style="margin-top:8px">
+      <button onclick="openTool('shield')">${t(UI.t_shield)}</button>
+      <button onclick="openTool('calm')">${t(UI.t_calm)}</button>
+      <button onclick="openTool('mission')">${t(UI.t_mission)}</button>
+      <button onclick="openTool('dua')">${t(UI.t_dua)}</button>
+    </div></div>`;
+}
+function vPlay(){
+  const w = WORLDS[state.world], list = Q[state.world], q = list[state.qi];
+  const bars = list.map((_,i) => `<i class="${i <= state.qi ? "on" : ""}"></i>`).join("");
+  const opts = q.o.map((o,i) => {
+    let cls = "opt";
+    if (state.picked > -1){
+      if (i === state.picked) cls += (i === q.ok ? " good" : " bad");
+      else if (state.picked !== q.ok && i === q.ok && state.picked > -1) cls += "";
+    }
+    const dis = state.picked === q.ok ? "disabled" : "";
+    return `<button class="${cls}" ${dis} onclick="pick(${i})">${t(o)}</button>`;
+  }).join("");
+  let fb = "";
+  if (state.picked > -1){
+    const good = state.picked === q.ok;
+    fb = `<div class="fb ${good ? "win" : "miss"}" role="status">
+      <h3>${good ? t(UI.win) : t(UI.miss)}</h3>
+      <p>${t(q.w[state.picked])}</p>
+      ${good ? `<p class="tip">${t(q.tip)}</p>` : `<p class="muted">${t(UI.best)}«${t(q.o[q.ok])}»</p>`}
+      <div class="row">
+        ${good ? `<button class="big leaf" onclick="next()">${t(UI.next)}</button>`
+               : `<button class="big" onclick="retry()">${t(UI.again)}</button>`}
+        <button onclick="speak(${JSON.stringify(t(q.w[state.picked])).replace(/"/g,"&quot;")})">${t(UI.listen)}</button>
+      </div></div>`;
+  }
+  const readAll = t(q.q) + ". " + q.o.map(o => t(o)).join(". ");
+  return `<div class="card" style="--hue:${w.hue}">
+    <div class="prog">${bars}</div>
+    <div class="art" style="--tint:${w.tint}">${ART[q.art]}</div>
+    <h2 style="margin-top:14px">${t(q.q)}</h2>
+    <div class="row" style="margin-top:0">
+      <button onclick="speak(${JSON.stringify(readAll).replace(/"/g,"&quot;")})">${t(UI.listen)}</button>
+      <span class="muted">${ar(state.qi+1)} ${t(UI.of)} ${ar(list.length)}</span>
+    </div>
+    <div class="opts">${opts}</div>
+    ${fb}</div>`;
+}
+function retry(){ state.picked = -1; stopSpeech(); render(); }
+
+function openTool(k){
+  stopSpeech(); state.tool = k; state.screen = "tool";
+  if (k === "mission" && !state.mis.length){
+    const idx = MISSIONS.map((_,i) => i).sort(() => Math.random() - .5).slice(0,3);
+    state.mis = idx;
+  }
+  render();
+}
+function nextAff(){ state.aff = (state.aff + 1) % AFFIRM.length; render(); speak(t(AFFIRM[state.aff][0])); }
+function doMission(i){ state.misDone[i] = true; render(); }
+function missionStars(){ return Object.keys(state.misDone).length; }
+function esc(x){ return JSON.stringify(x).replace(/"/g,"&quot;"); }
+
+function startBreath(){
+  const steps = [[t(UI.calm_in),4],[t(UI.calm_hold),4],[t(UI.calm_out),6]];
+  let round = 0, si = 0, left = steps[0][1];
+  const label = document.getElementById("bLabel"), num = document.getElementById("bNum"), ball = document.getElementById("bBall");
+  if (!label) return;
+  const paint = () => {
+    label.textContent = steps[si][0]; num.textContent = ar(left);
+    ball.style.transform = "scale(" + (si === 0 ? 1.35 : si === 1 ? 1.35 : .75) + ")";
+  };
+  speak(steps[0][0]); paint();
+  breathTimer = setInterval(() => {
+    left--;
+    if (left <= 0){
+      si++;
+      if (si >= steps.length){ si = 0; round++; }
+      if (round >= 3){
+        clearInterval(breathTimer); breathTimer = null;
+        label.textContent = t(UI.calm_done); num.textContent = "★"; ball.style.transform = "scale(1)";
+        speak(t(UI.calm_done)); return;
+      }
+      left = steps[si][1]; speak(steps[si][0]);
+    }
+    paint();
+  }, 1000);
+}
+
+function vTool(){
+  const back = `<div class="row"><button onclick="goMap()">${t(UI.back)}</button></div>`;
+  if (state.tool === "shield"){
+    const a = AFFIRM[state.aff];
+    return `<div class="card" style="--hue:#7C6BC4">
+      <div class="art" style="--tint:#EDEBF9">${ART.confident}</div>
+      <h2 style="margin-top:14px">${t(UI.t_shield)}</h2>
+      <p class="muted">${t(UI.aff_p)}</p>
+      <div class="fb win"><h3 style="font-size:20px;line-height:1.6">${t(a[0])}</h3><p class="muted">${t(a[1])}</p></div>
+      <div class="row">
+        <button class="big" onclick="nextAff()">${t(UI.aff_next)}</button>
+        <button onclick="speak(${esc(t(a[0]))})">${t(UI.listen)}</button>
+      </div>${back}</div>`;
+  }
+  if (state.tool === "calm"){
+    return `<div class="card" style="--hue:#3C7FB8">
+      <h2>${t(UI.t_calm)}</h2>
+      <p class="muted">${t(UI.calm_p)}</p>
+      <div style="text-align:center;padding:18px 0">
+        <div id="bBall" style="width:150px;height:150px;margin:0 auto;border-radius:50%;background:#E6F0F8;border:3px solid #3C7FB8;display:flex;align-items:center;justify-content:center;transition:transform 1s ease-in-out">
+          <span id="bNum" style="font-size:34px;font-weight:700;color:#3C7FB8">٣</span>
+        </div>
+        <p id="bLabel" style="font-size:20px;font-weight:500;margin-top:16px">${t(UI.calm_go)}</p>
+      </div>
+      <div class="row"><button class="big" onclick="openTool('calm')">${t(UI.calm_go)}</button></div>${back}</div>`;
+  }
+  if (state.tool === "mission"){
+    const items = state.mis.map(i => {
+      const done = state.misDone[i];
+      return `<div class="fb" style="margin-top:10px"><p style="margin:0">${t(MISSIONS[i])}</p>
+        <div class="row" style="margin-top:8px">
+          ${done ? `<span class="stars">★ ${t(UI.mis_ok)}</span>`
+                 : `<button onclick="doMission(${i})">${t(UI.mis_done)}</button>`}
+          <button onclick="speak(${esc(t(MISSIONS[i]))})">${t(UI.listen)}</button>
+        </div></div>`;
+    }).join("");
+    return `<div class="card" style="--hue:#DFA22B">
+      <div class="art" style="--tint:#FBF0DA">${ART.relatives}</div>
+      <h2 style="margin-top:14px">${t(UI.t_mission)}</h2>
+      <p class="muted">${t(UI.mis_p)}</p>${items}${back}</div>`;
+  }
+  if (state.tool === "voice"){
+    loadVoices();
+    const testTxt = state.lang ? "تجربة الصوت، هيك بصير صوتي" : "هذه تجربةٌ للصوت العربي";
+    const arv = voices.filter(isArabic);
+    const opts = voices.map((v,i) =>
+      `<option value="${i}" ${chosenVoice && chosenVoice.name === v.name ? "selected" : ""}>${v.name} — ${v.lang}</option>`).join("");
+    const rows = [
+      ["دعم المتصفّح للقراءة", SS ? "متوفّر" : "غير متوفّر"],
+      ["الأصوات المتاحة", ar(voices.length)],
+      ["أصوات عربية", arv.length ? ar(arv.length) + " (" + arv.map(v => v.name).join("، ") + ")" : "لا يوجد"],
+      ["الصوت المختار", chosenVoice ? chosenVoice.name : "الافتراضي"],
+      ["نافذة مستقلة", inFrame() ? "لا — أنت داخل معاينة مضمّنة" : "نعم"],
+      ["ملفات الصوت الجاهزة", audioWorks === false ? "لم يعثر عليها — تأكّد من وجود مجلّد audio بجانب الملف" : audioWorks ? "تعمل" : "لم تُجرَّب بعد، اضغط «جرّب الصوت»"]
+    ].map(r => `<p style="margin:0">${r[0]}: <b>${r[1]}</b></p>`).join("");
+    const help = `<ul style="margin:10px 0 0;padding-inline-start:20px">
+      <li>اللعبة تشغّل ملفات صوت عربية جاهزة من مجلّد audio بجانب هذا الملف، ولا تحتاج أي إعداد. إن حذفت المجلّد رجعت إلى نطق المتصفّح.</li>
+      <li>إن كنت تعاين الملف داخل التطبيق، حمّله وافتحه مباشرة في Chrome أو Safari أو Edge؛ المعاينات المضمّنة تمنع النطق غالبًا.</li>
+      <li>المس الشاشة مرة واحدة قبل أول تشغيل؛ المتصفّحات تشترط لمسة قبل إطلاق الصوت.</li>
+      <li>إن لم يظهر صوت عربي: أندرويد من الإعدادات ثم إمكانية الوصول ثم تحويل النص إلى كلام ثم تنزيل العربية. آيفون من الإعدادات ثم إمكانية الوصول ثم المحتوى المنطوق ثم الأصوات ثم العربية. ويندوز من الإعدادات ثم الوقت واللغة ثم إضافة العربية مع حزمة الكلام.</li>
+      <li>على iOS يعمل النطق في Safari فقط، ومع إيقاف زر كتم الصوت الجانبي.</li>
+      <li>على لينكس: كروم يأخذ الأصوات من speech-dispatcher في النظام. ثبّت المحرّك العربي بالأمر: sudo apt install speech-dispatcher speech-dispatcher-espeak-ng espeak-ng espeak-ng-data — ثم أغلق كروم وافتحه من جديد. للتجربة من الطرفية: spd-say -o espeak-ng -l ar "مرحبا".</li>
+      <li>إن ظهرت أصوات بلا اسم لغة، اختر من القائمة أعلاه الصوت المكتوب فيه Arabic ثم اضغط «جرّب الصوت».</li>
+    </ul>`;
+    return `<div class="card" style="--hue:#3C7FB8">
+      <h2>${t(UI.t_voice)}</h2>
+      <div class="fb"><h3>${t(UI.v_state)}</h3>${rows}</div>
+      ${voices.length ? `<p class="muted" style="margin-top:12px">${t(UI.v_pick)}</p>
+        <select onchange="setVoice(this.value)" style="font-family:inherit;font-size:15px;padding:10px;border-radius:14px;border:1px solid var(--line);max-width:100%">${opts}</select>` : ""}
+      <div class="row"><button class="big" onclick="speak(${esc(testTxt)})">${t(UI.v_test)}</button></div>
+      ${help}${back}</div>`;
+  }
+  const list = DUAS.map(d => `<div class="fb" style="margin-top:10px">
+      <h3 class="tip" style="border:0;margin:0;padding:0;font-size:20px;color:var(--ink)">${t(d.d)}</h3>
+      <p class="muted" style="margin:6px 0 0">${t(UI.when)}: ${t(d.w)}</p>
+      <p style="margin:2px 0 0">${t(d.m)}</p>
+      <div class="row" style="margin-top:8px"><button onclick="speak(${esc(t(d.d))})">${t(UI.listen)}</button></div>
+    </div>`).join("");
+  return `<div class="card" style="--hue:#3E9D7A">
+    <div class="art" style="--tint:#E4F2EC">${ART.shield}</div>
+    <h2 style="margin-top:14px">${t(UI.t_dua)}</h2>
+    <p class="muted">${t(UI.dua_p)}</p>${list}${back}</div>`;
+}
+function vWorldDone(){
+  const w = WORLDS[state.world], st = worldStars(state.world), tot = Q[state.world].length;
+  const ph = t(PRACTICE[state.world]).map(p =>
+    `<span onclick="speak('${p}')" style="cursor:pointer">${p}</span>`).join("");
+  return `<div class="card" style="--hue:${w.hue}">
+    <div class="art" style="--tint:${w.tint}">${ART.salam}</div>
+    <h2 style="margin-top:14px">${t(UI.done_h)}: ${t(w.name)}</h2>
+    <p class="stars" style="font-size:22px">${"★".repeat(st)}${"☆".repeat(tot-st)}</p>
+    <h3 style="margin:12px 0 0;font-size:17px">${t(UI.practice)}</h3>
+    <div class="chips">${ph}</div>
+    <div class="row"><button class="big" onclick="goMap()">${t(UI.back)}</button></div>
+  </div>`;
+}
+function vCert(){
+  const n = state.name || (state.lang ? "بطل الأخلاق" : "صاحب الخُلق الحسن");
+  return `<div class="card"><div class="cert">
+    <h2>${t(UI.cert_h)}</h2>
+    <div class="name">${n}</div>
+    <p>${t(UI.cert_p)} ${ar(totalStars() + missionStars())} ${t(UI.star_w)}</p>
+    <p class="muted" style="margin:0">${t(UI.badges)}</p>
+    <div class="chips" style="justify-content:center">${
+      BADGES.map((b,i) => worldStars(i) >= Math.ceil(Q[i].length * .6) ? `<span>${t(b)}</span>` : "").join("")
+    }</div>
+    <p class="tip" style="border:0">«إنّ من أحبّكم إليّ أحاسنكم أخلاقًا»</p>
+  </div>
+  <div class="row">
+    <button class="big leaf" onclick="window.print()">${t(UI.print)}</button>
+    <button onclick="restart()">${t(UI.restart)}</button>
+  </div></div>`;
+}
+render();
+</script>
+</body>
+</html>
